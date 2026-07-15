@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -34,9 +33,9 @@ class DriveFile(BaseModel):
     file_id: str = ""
     name: str = ""
     mime_type: str = ""
-    created_time: Optional[datetime] = None
-    modified_time: Optional[datetime] = None
-    size: Optional[int] = None
+    created_time: datetime | None = None
+    modified_time: datetime | None = None
+    size: int | None = None
     parents: list[str] = Field(default_factory=list)
     web_view_link: str = ""
     trashed: bool = False

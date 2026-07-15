@@ -8,7 +8,10 @@ from __future__ import annotations
 
 from fastmcp import FastMCP
 
-from google_forms_mcp.auth.manager import AuthManager
+from google_forms_mcp.auth.credential_manager import CredentialManager
+from google_forms_mcp.clients.forms_client import FormsClient
+from google_forms_mcp.clients.drive_client import DriveClient
+from google_forms_mcp.clients.sheets_client import SheetsClient
 from google_forms_mcp.config import Settings, TransportMode, get_settings
 from google_forms_mcp.infrastructure.logging import get_logger, setup_logging
 from google_forms_mcp.infrastructure.rate_limiter import create_default_rate_limiter
@@ -19,6 +22,7 @@ from google_forms_mcp.resources.forms import register_resources
 from google_forms_mcp.tools.drive.tools import register_drive_tools
 from google_forms_mcp.tools.forms.tools import register_form_tools
 from google_forms_mcp.tools.sheets.tools import register_sheets_tools
+from googleapiclient.discovery import build
 
 logger = get_logger("server")
 
@@ -39,7 +43,7 @@ def create_server(settings: Settings | None = None) -> FastMCP:
 
     # Setup logging
     setup_logging(settings.google_forms_mcp_log_level.value)
-    logger.info("Initializing Google Forms MCP Server v0.1.0")
+    logger.info("Initializing Google Forms MCP Server v0.2.0")
 
     # Create the MCP server
     mcp = FastMCP(
@@ -62,16 +66,28 @@ def create_server(settings: Settings | None = None) -> FastMCP:
     # Create infrastructure
     rate_limiter = create_default_rate_limiter()
 
-    # Create auth manager and API clients
-    auth_manager = AuthManager(settings)
-    forms_client = auth_manager.get_forms_client()
-    drive_client = auth_manager.get_drive_client()
-    sheets_client = auth_manager.get_sheets_client()
+    # Create auth manager
+    cred_manager = CredentialManager(settings)
+    
+    # Get credentials for the default profile
+    # Note: In a multi-user server, this would be requested per-invocation.
+    # For desktop MCP, we use a single default profile.
+    creds = cred_manager.get_valid_credentials("default")
+    
+    # Create raw googleapiclient resources
+    raw_forms = build("forms", "v1", credentials=creds)
+    raw_drive = build("drive", "v3", credentials=creds)
+    raw_sheets = build("sheets", "v4", credentials=creds)
+    
+    # Create robust API clients mapping HTTP errors to domain errors
+    forms_client = FormsClient(raw_forms, rate_limiter, settings)
+    drive_client = DriveClient(raw_drive, rate_limiter, settings)
+    sheets_client = SheetsClient(raw_sheets, rate_limiter, settings)
 
-    # Create services
-    forms_service = FormsService(forms_client, rate_limiter)
-    drive_service = DriveService(drive_client, rate_limiter)
-    sheets_service = SheetsService(sheets_client, rate_limiter)
+    # Create services (domain logic)
+    forms_service = FormsService(forms_client)
+    drive_service = DriveService(drive_client)
+    sheets_service = SheetsService(sheets_client)
 
     # Register all tools and resources
     register_form_tools(mcp, forms_service, drive_service)

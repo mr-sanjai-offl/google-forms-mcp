@@ -32,8 +32,8 @@ from google_forms_mcp.exceptions.errors import (
 
 __all__ = [
     "APIError",
-    "AuthenticationError",
     "AuthNotConfiguredError",
+    "AuthenticationError",
     "FormNotFoundError",
     "GoogleFormsMCPError",
     "InvalidCredentialsError",

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -30,7 +29,7 @@ class Answer(BaseModel):
     question_id: str = ""
     text_answers: list[str] = Field(default_factory=list)
     file_upload_answers: list[FileUpload] = Field(default_factory=list)
-    grade: Optional[Grade] = None
+    grade: Grade | None = None
 
 
 class FormResponse(BaseModel):
@@ -38,10 +37,10 @@ class FormResponse(BaseModel):
 
     response_id: str = ""
     form_id: str = ""
-    create_time: Optional[datetime] = None
-    last_submitted_time: Optional[datetime] = None
+    create_time: datetime | None = None
+    last_submitted_time: datetime | None = None
     respondent_email: str = ""
-    total_score: Optional[float] = None
+    total_score: float | None = None
     answers: dict[str, Answer] = Field(default_factory=dict)
 
 
@@ -64,7 +63,7 @@ class QuestionSummary(BaseModel):
     # For text questions: list of unique text responses
     text_responses: list[str] = Field(default_factory=list)
     # For numeric/scale: basic statistics
-    average: Optional[float] = None
-    median: Optional[float] = None
-    min_value: Optional[float] = None
-    max_value: Optional[float] = None
+    average: float | None = None
+    median: float | None = None
+    min_value: float | None = None
+    max_value: float | None = None

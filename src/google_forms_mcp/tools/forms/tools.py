@@ -11,11 +11,12 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from fastmcp import Context
-
 from google_forms_mcp.exceptions import GoogleFormsMCPError
 from google_forms_mcp.models.form import (
+    CorrectAnswer,
+    Feedback,
     FormCreateRequest,
+    GradingConfig,
     MediaCreateRequest,
     MediaType,
     QuestionCreateRequest,
@@ -23,10 +24,6 @@ from google_forms_mcp.models.form import (
     SectionCreateRequest,
     SettingsUpdateRequest,
     TextItemCreateRequest,
-    ValidationRule,
-    GradingConfig,
-    CorrectAnswer,
-    Feedback,
 )
 
 

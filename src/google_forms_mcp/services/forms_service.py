@@ -9,15 +9,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from google_forms_mcp.clients.forms_client import FormsClient
 from google_forms_mcp.exceptions import (
     FormNotFoundError,
     InvalidRequestError,
     ItemNotFoundError,
-    NotFoundError,
 )
 from google_forms_mcp.infrastructure.logging import get_logger
-from google_forms_mcp.infrastructure.rate_limiter import RateLimiter
-from google_forms_mcp.infrastructure.retry import with_retry
 from google_forms_mcp.models.form import (
     Form,
     FormCreateRequest,
@@ -35,7 +33,6 @@ from google_forms_mcp.models.form import (
     SectionCreateRequest,
     SettingsUpdateRequest,
     TextItemCreateRequest,
-    ValidationRule,
 )
 from google_forms_mcp.models.response import (
     Answer,
@@ -54,19 +51,15 @@ class FormsService:
     never leak beyond this class.
     """
 
-    def __init__(self, forms_client: Any, rate_limiter: RateLimiter) -> None:
+    def __init__(self, forms_client: FormsClient) -> None:
         """Initialize the Forms service.
 
         Args:
             forms_client: Authenticated Google Forms API client.
-            rate_limiter: Rate limiter instance.
         """
         self._client = forms_client
-        self._limiter = rate_limiter
 
     # --- Form CRUD ---
-
-    @with_retry()
     def create(self, request: FormCreateRequest) -> Form:
         """Create a new Google Form.
 
@@ -79,11 +72,10 @@ class FormsService:
         Returns:
             The created Form.
         """
-        self._limiter.acquire("forms_write")
 
         # Step 1: Create the form with title
         body = {"info": {"title": request.title}}
-        result = self._client.forms().create(body=body).execute()
+        result = self._client.create(body=body)
         form_id = result["formId"]
         logger.info("Created form: %s", form_id)
 
@@ -101,8 +93,6 @@ class FormsService:
 
         # Return the complete form
         return self.get(form_id)
-
-    @with_retry()
     def get(self, form_id: str) -> Form:
         """Retrieve a form's complete structure and metadata.
 
@@ -115,10 +105,9 @@ class FormsService:
         Raises:
             FormNotFoundError: If the form doesn't exist.
         """
-        self._limiter.acquire("forms_read")
 
         try:
-            result = self._client.forms().get(formId=form_id).execute()
+            result = self._client.get(form_id=form_id)
         except Exception as e:
             if "404" in str(e):
                 raise FormNotFoundError(form_id) from e
@@ -146,8 +135,6 @@ class FormsService:
         return self.get(form_id)
 
     # --- Questions ---
-
-    @with_retry()
     def add_question(self, form_id: str, request: QuestionCreateRequest) -> Form:
         """Add a question to a form.
 
@@ -161,7 +148,6 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        self._limiter.acquire("forms_write")
 
         # Build the item based on question type
         if request.question_type in (
@@ -181,8 +167,6 @@ class FormsService:
         logger.info("Added %s question to form %s", request.question_type.value, form_id)
 
         return self.get(form_id)
-
-    @with_retry()
     def update_question(
         self,
         form_id: str,
@@ -199,7 +183,6 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        self._limiter.acquire("forms_write")
 
         # Get the current form to find the item index
         form = self.get(form_id)
@@ -220,8 +203,6 @@ class FormsService:
 
         self._batch_update(form_id, [update_request])
         return self.get(form_id)
-
-    @with_retry()
     def delete_question(self, form_id: str, item_id: str | None = None, index: int | None = None) -> Form:
         """Delete a question from a form.
 
@@ -233,7 +214,6 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        self._limiter.acquire("forms_write")
 
         if item_id and index is None:
             form = self.get(form_id)
@@ -249,8 +229,6 @@ class FormsService:
         logger.info("Deleted item at index %d from form %s", index, form_id)
 
         return self.get(form_id)
-
-    @with_retry()
     def move_question(self, form_id: str, item_id: str, new_index: int) -> Form:
         """Move a question to a new position.
 
@@ -262,7 +240,6 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        self._limiter.acquire("forms_write")
 
         form = self.get(form_id)
         old_index = self._find_item_index(form, item_id)
@@ -279,8 +256,6 @@ class FormsService:
         return self.get(form_id)
 
     # --- Sections ---
-
-    @with_retry()
     def add_section(self, form_id: str, request: SectionCreateRequest) -> Form:
         """Add a section (page break) to a form.
 
@@ -291,7 +266,6 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        self._limiter.acquire("forms_write")
 
         item: dict[str, Any] = {
             "title": request.title,
@@ -307,8 +281,6 @@ class FormsService:
         logger.info("Added section '%s' to form %s", request.title, form_id)
 
         return self.get(form_id)
-
-    @with_retry()
     def update_section(
         self,
         form_id: str,
@@ -327,7 +299,6 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        self._limiter.acquire("forms_write")
 
         form = self.get(form_id)
         item_index = self._find_item_index(form, item_id)
@@ -355,8 +326,6 @@ class FormsService:
         self._batch_update(form_id, [update_request])
 
         return self.get(form_id)
-
-    @with_retry()
     def delete_section(self, form_id: str, item_id: str) -> Form:
         """Delete a section (page break) from a form.
 
@@ -370,8 +339,6 @@ class FormsService:
         return self.delete_question(form_id, item_id=item_id)
 
     # --- Media & Text ---
-
-    @with_retry()
     def add_media(self, form_id: str, request: MediaCreateRequest) -> Form:
         """Add an image or video item to a form.
 
@@ -382,7 +349,6 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        self._limiter.acquire("forms_write")
 
         item: dict[str, Any] = {"title": request.title}
 
@@ -397,8 +363,6 @@ class FormsService:
 
         self._batch_update(form_id, [create_request])
         return self.get(form_id)
-
-    @with_retry()
     def add_text_item(self, form_id: str, request: TextItemCreateRequest) -> Form:
         """Add a text/description block to a form.
 
@@ -409,7 +373,6 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        self._limiter.acquire("forms_write")
 
         item: dict[str, Any] = {
             "title": request.title,
@@ -425,8 +388,6 @@ class FormsService:
         return self.get(form_id)
 
     # --- Settings ---
-
-    @with_retry()
     def update_settings(self, form_id: str, request: SettingsUpdateRequest) -> Form:
         """Update form-level settings.
 
@@ -463,8 +424,6 @@ class FormsService:
         return self.get(form_id)
 
     # --- Publishing ---
-
-    @with_retry()
     def publish(
         self,
         form_id: str,
@@ -480,7 +439,6 @@ class FormsService:
             is_published: Whether the form should be published.
             is_accepting: Whether the form should accept responses.
         """
-        self._limiter.acquire("forms_write")
 
         body = {
             "publishSettings": {
@@ -492,9 +450,7 @@ class FormsService:
         }
 
         try:
-            self._client.forms().setPublishSettings(
-                formId=form_id, body=body
-            ).execute()
+            self._client.set_publish_settings(form_id=form_id, body=body)
             logger.info(
                 "Form %s: published=%s, accepting=%s",
                 form_id, is_published, is_accepting,
@@ -504,8 +460,6 @@ class FormsService:
             logger.warning("Could not set publish settings for %s: %s", form_id, e)
 
     # --- Responses ---
-
-    @with_retry()
     def list_responses(
         self,
         form_id: str,
@@ -524,7 +478,6 @@ class FormsService:
         Returns:
             Tuple of (list of responses, next page token or None).
         """
-        self._limiter.acquire("forms_read_expensive")
 
         kwargs: dict[str, Any] = {
             "formId": form_id,
@@ -536,7 +489,7 @@ class FormsService:
             kwargs["filter"] = filter_str
 
         try:
-            result = self._client.forms().responses().list(**kwargs).execute()
+            result = self._client.list_responses(**kwargs)
         except Exception as e:
             if "404" in str(e):
                 raise FormNotFoundError(form_id) from e
@@ -549,8 +502,6 @@ class FormsService:
         next_token = result.get("nextPageToken")
 
         return responses, next_token
-
-    @with_retry()
     def get_response(self, form_id: str, response_id: str) -> FormResponse:
         """Get a single response by ID.
 
@@ -561,13 +512,9 @@ class FormsService:
         Returns:
             The FormResponse.
         """
-        self._limiter.acquire("forms_read_expensive")
 
         result = (
-            self._client.forms()
-            .responses()
-            .get(formId=form_id, responseId=response_id)
-            .execute()
+            self._client.get_response(form_id=form_id, response_id=response_id)
         )
 
         return self._parse_response(result, form_id)
@@ -586,12 +533,8 @@ class FormsService:
         """
         body = {"requests": requests}
         return (
-            self._client.forms()
-            .batchUpdate(formId=form_id, body=body)
-            .execute()
+            self._client.batch_update(form_id=form_id, requests=body.get("requests", []))
         )
-
-    @with_retry()
     def _update_form_info(
         self,
         form_id: str,
@@ -600,7 +543,6 @@ class FormsService:
         confirmation_message: str | None = None,
     ) -> None:
         """Update form info fields."""
-        self._limiter.acquire("forms_write")
 
         info: dict[str, Any] = {}
         mask_parts = []
@@ -622,11 +564,8 @@ class FormsService:
             }
         }
         self._batch_update(form_id, [request])
-
-    @with_retry()
     def _update_settings_raw(self, form_id: str, settings: dict[str, Any]) -> None:
         """Update form settings with raw API structure."""
-        self._limiter.acquire("forms_write")
 
         request = {
             "updateSettings": {

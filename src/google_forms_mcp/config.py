@@ -8,7 +8,6 @@ from __future__ import annotations
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -49,25 +48,25 @@ class Settings(BaseSettings):
     )
 
     # --- Google OAuth 2.0 Credentials ---
-    google_client_id: Optional[str] = Field(
+    google_client_id: str | None = Field(
         default=None,
         description="Google OAuth 2.0 Client ID",
     )
-    google_client_secret: Optional[str] = Field(
+    google_client_secret: str | None = Field(
         default=None,
         description="Google OAuth 2.0 Client Secret",
     )
-    google_refresh_token: Optional[str] = Field(
+    google_refresh_token: str | None = Field(
         default=None,
         description="Pre-obtained Google OAuth 2.0 Refresh Token",
     )
 
     # --- Alternative Auth: File-based credentials ---
-    google_client_secrets_file: Optional[str] = Field(
+    google_client_secrets_file: str | None = Field(
         default=None,
         description="Path to OAuth client secrets JSON file",
     )
-    google_service_account_file: Optional[str] = Field(
+    google_service_account_file: str | None = Field(
         default=None,
         description="Path to service account key JSON file",
     )
@@ -86,6 +85,24 @@ class Settings(BaseSettings):
     google_forms_mcp_port: int = Field(
         default=8000,
         description="HTTP port (only used when transport is http)",
+    )
+
+    # --- Phase 2: Advanced Auth & Client Config ---
+    oauth_redirect_uri: str = Field(
+        default="http://localhost:8080/",
+        description="Redirect URI for localhost OAuth flow",
+    )
+    api_timeout_seconds: int = Field(
+        default=60,
+        description="Default timeout for Google API requests",
+    )
+    max_retries: int = Field(
+        default=5,
+        description="Maximum number of retries for transient Google API errors",
+    )
+    retry_backoff_factor: float = Field(
+        default=2.0,
+        description="Exponential backoff multiplier for retries",
     )
 
     # --- Logging ---

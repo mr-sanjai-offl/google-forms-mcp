@@ -9,10 +9,9 @@ import csv
 import io
 from typing import Any
 
+from google_forms_mcp.clients.sheets_client import SheetsClient
 from google_forms_mcp.exceptions import SpreadsheetNotFoundError
 from google_forms_mcp.infrastructure.logging import get_logger
-from google_forms_mcp.infrastructure.rate_limiter import RateLimiter
-from google_forms_mcp.infrastructure.retry import with_retry
 from google_forms_mcp.models.sheets import (
     SheetData,
     SheetProperties,
@@ -26,11 +25,9 @@ logger = get_logger("sheets_service")
 class SheetsService:
     """Service for Google Sheets API operations."""
 
-    def __init__(self, sheets_client: Any, rate_limiter: RateLimiter) -> None:
+    def __init__(self, sheets_client: SheetsClient) -> None:
         self._client = sheets_client
-        self._limiter = rate_limiter
 
-    @with_retry()
     def create(
         self,
         title: str,
@@ -45,8 +42,6 @@ class SheetsService:
         Returns:
             Created Spreadsheet.
         """
-        self._limiter.acquire("sheets_write")
-
         body: dict[str, Any] = {"properties": {"title": title}}
 
         if sheet_names:
@@ -55,13 +50,10 @@ class SheetsService:
                 for idx, name in enumerate(sheet_names)
             ]
 
-        result = self._client.spreadsheets().create(
-            body=body, fields="spreadsheetId,properties,spreadsheetUrl,sheets"
-        ).execute()
+        result = self._client.create(body=body)
 
         return self._parse_spreadsheet(result)
 
-    @with_retry()
     def get_info(self, spreadsheet_id: str) -> Spreadsheet:
         """Get spreadsheet metadata.
 
@@ -71,13 +63,8 @@ class SheetsService:
         Returns:
             Spreadsheet metadata.
         """
-        self._limiter.acquire("sheets_read")
-
         try:
-            result = self._client.spreadsheets().get(
-                spreadsheetId=spreadsheet_id,
-                fields="spreadsheetId,properties,spreadsheetUrl,sheets",
-            ).execute()
+            result = self._client.get(spreadsheet_id=spreadsheet_id)
         except Exception as e:
             if "404" in str(e):
                 raise SpreadsheetNotFoundError(spreadsheet_id) from e
@@ -85,7 +72,6 @@ class SheetsService:
 
         return self._parse_spreadsheet(result)
 
-    @with_retry()
     def read(self, spreadsheet_id: str, range_str: str) -> SheetData:
         """Read values from a spreadsheet range.
 
@@ -96,12 +82,10 @@ class SheetsService:
         Returns:
             SheetData with the values.
         """
-        self._limiter.acquire("sheets_read")
-
-        result = self._client.spreadsheets().values().get(
-            spreadsheetId=spreadsheet_id,
-            range=range_str,
-        ).execute()
+        result = self._client.get_values(
+            spreadsheet_id=spreadsheet_id,
+            range_name=range_str,
+        )
 
         return SheetData(
             range=result.get("range", ""),
@@ -109,7 +93,6 @@ class SheetsService:
             major_dimension=result.get("majorDimension", "ROWS"),
         )
 
-    @with_retry()
     def write(
         self,
         spreadsheet_id: str,
@@ -126,14 +109,12 @@ class SheetsService:
         Returns:
             SheetWriteResult with update details.
         """
-        self._limiter.acquire("sheets_write")
-
-        result = self._client.spreadsheets().values().update(
-            spreadsheetId=spreadsheet_id,
-            range=range_str,
-            valueInputOption="USER_ENTERED",
+        result = self._client.update_values(
+            spreadsheet_id=spreadsheet_id,
+            range_name=range_str,
             body={"values": values},
-        ).execute()
+            value_input_option="USER_ENTERED"
+        )
 
         return SheetWriteResult(
             spreadsheet_id=result.get("spreadsheetId", ""),
@@ -143,7 +124,6 @@ class SheetsService:
             updated_cells=result.get("updatedCells", 0),
         )
 
-    @with_retry()
     def append(
         self,
         spreadsheet_id: str,
@@ -160,15 +140,13 @@ class SheetsService:
         Returns:
             SheetWriteResult with update details.
         """
-        self._limiter.acquire("sheets_write")
-
-        result = self._client.spreadsheets().values().append(
-            spreadsheetId=spreadsheet_id,
-            range=range_str,
-            valueInputOption="USER_ENTERED",
-            insertDataOption="INSERT_ROWS",
+        result = self._client.append_values(
+            spreadsheet_id=spreadsheet_id,
+            range_name=range_str,
             body={"values": values},
-        ).execute()
+            value_input_option="USER_ENTERED",
+            insert_data_option="INSERT_ROWS"
+        )
 
         updates = result.get("updates", {})
         return SheetWriteResult(

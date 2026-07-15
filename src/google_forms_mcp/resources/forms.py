@@ -58,7 +58,7 @@ def register_resources(mcp: Any, forms_service: Any, drive_service: Any) -> None
             # Fetch all responses (pagination abstracted for resource)
             all_responses = []
             next_token = None
-            
+
             while True:
                 responses, next_token = forms_service.list_responses(
                     form_id, page_size=5000, page_token=next_token
@@ -66,7 +66,7 @@ def register_resources(mcp: Any, forms_service: Any, drive_service: Any) -> None
                 all_responses.extend(responses)
                 if not next_token:
                     break
-                    
+
             return json.dumps([r.model_dump(mode="json", exclude_none=True) for r in all_responses], indent=2, default=str)
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"

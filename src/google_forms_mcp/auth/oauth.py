@@ -15,7 +15,6 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 from google_forms_mcp.config import GOOGLE_FORMS_SCOPES, Settings
 from google_forms_mcp.exceptions import (
-    AuthNotConfiguredError,
     InvalidCredentialsError,
     RefreshFailedError,
 )
@@ -84,8 +83,16 @@ def build_credentials_from_secrets_file(settings: Settings) -> Credentials:
             settings.google_client_secrets_file,
             scopes=GOOGLE_FORMS_SCOPES,
         )
+        port = 0
+        if settings.oauth_redirect_uri.startswith("http://localhost:"):
+            try:
+                # Extract port from e.g., http://localhost:8080/
+                port = int(settings.oauth_redirect_uri.split(":")[2].strip("/"))
+            except (IndexError, ValueError):
+                pass
+
         creds = flow.run_local_server(
-            port=0,
+            port=port,
             access_type="offline",
             prompt="consent",
         )

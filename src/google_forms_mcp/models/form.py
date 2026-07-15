@@ -8,10 +8,8 @@ response structures.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Optional
 
 from pydantic import BaseModel, Field
-
 
 # --- Enums ---
 
@@ -86,16 +84,16 @@ class ValidationRule(BaseModel):
     error_message: str = ""
 
     # Number validation
-    number_op: Optional[NumberValidationOp] = None
-    number_value: Optional[float] = None
-    number_value_high: Optional[float] = None  # For BETWEEN/NOT_BETWEEN
+    number_op: NumberValidationOp | None = None
+    number_value: float | None = None
+    number_value_high: float | None = None  # For BETWEEN/NOT_BETWEEN
 
     # Text/regex validation
-    pattern: Optional[str] = None
+    pattern: str | None = None
 
     # Length validation
-    min_length: Optional[int] = None
-    max_length: Optional[int] = None
+    min_length: int | None = None
+    max_length: int | None = None
 
 
 class CorrectAnswer(BaseModel):
@@ -115,10 +113,10 @@ class GradingConfig(BaseModel):
     """Grading configuration for a quiz question."""
 
     point_value: int = 0
-    correct_answers: Optional[CorrectAnswer] = None
-    when_right: Optional[Feedback] = None
-    when_wrong: Optional[Feedback] = None
-    general_feedback: Optional[Feedback] = None
+    correct_answers: CorrectAnswer | None = None
+    when_right: Feedback | None = None
+    when_wrong: Feedback | None = None
+    general_feedback: Feedback | None = None
 
 
 # --- Form Items ---
@@ -129,7 +127,7 @@ class FormOption(BaseModel):
 
     value: str
     is_other: bool = False
-    go_to_section_id: Optional[str] = None  # For section navigation
+    go_to_section_id: str | None = None  # For section navigation
 
 
 class FormQuestion(BaseModel):
@@ -161,13 +159,13 @@ class FormQuestion(BaseModel):
     column_labels: list[str] = Field(default_factory=list)
 
     # File upload fields
-    max_file_size: Optional[int] = None
+    max_file_size: int | None = None
     allowed_file_types: list[str] = Field(default_factory=list)
     max_files: int = 1
 
     # Validation & grading
-    validation: Optional[ValidationRule] = None
-    grading: Optional[GradingConfig] = None
+    validation: ValidationRule | None = None
+    grading: GradingConfig | None = None
 
 
 class FormItem(BaseModel):
@@ -180,16 +178,16 @@ class FormItem(BaseModel):
     index: int = 0
 
     # Populated for QUESTION items
-    question: Optional[FormQuestion] = None
+    question: FormQuestion | None = None
 
     # Populated for QUESTION_GROUP items (grids)
     questions: list[FormQuestion] = Field(default_factory=list)
 
     # Populated for IMAGE items
-    image_uri: Optional[str] = None
+    image_uri: str | None = None
 
     # Populated for VIDEO items
-    video_uri: Optional[str] = None
+    video_uri: str | None = None
 
 
 class FormInfo(BaseModel):
@@ -202,7 +200,7 @@ class FormInfo(BaseModel):
     responder_uri: str = ""
     edit_uri: str = ""
     revision_id: str = ""
-    linked_sheet_id: Optional[str] = None
+    linked_sheet_id: str | None = None
 
 
 class FormSettings(BaseModel):
@@ -235,7 +233,7 @@ class FormCreateRequest(BaseModel):
     description: str = ""
     is_quiz: bool = False
     publish: bool = True
-    folder_id: Optional[str] = None
+    folder_id: str | None = None
 
 
 class QuestionCreateRequest(BaseModel):
@@ -245,7 +243,7 @@ class QuestionCreateRequest(BaseModel):
     title: str
     description: str = ""
     required: bool = False
-    position: Optional[int] = None
+    position: int | None = None
 
     # Choice question options
     options: list[str] = Field(default_factory=list)
@@ -267,15 +265,15 @@ class QuestionCreateRequest(BaseModel):
     column_labels: list[str] = Field(default_factory=list)
 
     # File upload options
-    max_file_size: Optional[int] = None
+    max_file_size: int | None = None
     allowed_file_types: list[str] = Field(default_factory=list)
     max_files: int = 1
 
     # Validation
-    validation: Optional[ValidationRule] = None
+    validation: ValidationRule | None = None
 
     # Grading (quiz mode)
-    grading: Optional[GradingConfig] = None
+    grading: GradingConfig | None = None
 
 
 class SectionCreateRequest(BaseModel):
@@ -283,7 +281,7 @@ class SectionCreateRequest(BaseModel):
 
     title: str
     description: str = ""
-    position: Optional[int] = None
+    position: int | None = None
 
 
 class MediaCreateRequest(BaseModel):
@@ -292,7 +290,7 @@ class MediaCreateRequest(BaseModel):
     media_type: MediaType
     uri: str
     title: str = ""
-    position: Optional[int] = None
+    position: int | None = None
 
 
 class TextItemCreateRequest(BaseModel):
@@ -300,13 +298,13 @@ class TextItemCreateRequest(BaseModel):
 
     title: str
     description: str = ""
-    position: Optional[int] = None
+    position: int | None = None
 
 
 class SettingsUpdateRequest(BaseModel):
     """Request to update form settings."""
 
-    is_quiz: Optional[bool] = None
-    email_collection: Optional[str] = None
-    confirmation_message: Optional[str] = None
-    shuffle_questions: Optional[bool] = None
+    is_quiz: bool | None = None
+    email_collection: str | None = None
+    confirmation_message: str | None = None
+    shuffle_questions: bool | None = None
