@@ -140,8 +140,7 @@ class InvalidQuestionTypeError(ValidationError):
 
     def __init__(self, question_type: str, valid_types: list[str]) -> None:
         super().__init__(
-            f"Invalid question type: '{question_type}'. "
-            f"Valid types are: {', '.join(valid_types)}"
+            f"Invalid question type: '{question_type}'. Valid types are: {', '.join(valid_types)}"
         )
 
 
@@ -178,8 +177,7 @@ class FormNotFoundError(OperationError):
     def __init__(self, form_id: str) -> None:
         self.form_id = form_id
         super().__init__(
-            f"Form not found: '{form_id}'. "
-            "Verify the form ID and ensure you have access."
+            f"Form not found: '{form_id}'. Verify the form ID and ensure you have access."
         )
 
 
@@ -189,9 +187,7 @@ class ItemNotFoundError(OperationError):
     def __init__(self, item_id: str, form_id: str) -> None:
         self.item_id = item_id
         self.form_id = form_id
-        super().__init__(
-            f"Item '{item_id}' not found in form '{form_id}'."
-        )
+        super().__init__(f"Item '{item_id}' not found in form '{form_id}'.")
 
 
 class SpreadsheetNotFoundError(OperationError):

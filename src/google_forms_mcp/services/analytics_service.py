@@ -176,8 +176,10 @@ class AnalyticsService:
             }
             for q_id, answer in response.answers.items():
                 title = q_titles.get(q_id, q_id)
-                row[title] = answer.text_answers if len(answer.text_answers) > 1 else (
-                    answer.text_answers[0] if answer.text_answers else ""
+                row[title] = (
+                    answer.text_answers
+                    if len(answer.text_answers) > 1
+                    else (answer.text_answers[0] if answer.text_answers else "")
                 )
             result.append(row)
 

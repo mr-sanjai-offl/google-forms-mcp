@@ -80,10 +80,7 @@ class DriveService:
         fields = "nextPageToken,files(id,name,mimeType,createdTime,modifiedTime,size,parents,webViewLink,trashed,owners)"
 
         result = self._client.list_files(
-            query=q_string,
-            fields=fields,
-            page_size=min(page_size, 100),
-            page_token=page_token
+            query=q_string, fields=fields, page_size=min(page_size, 100), page_token=page_token
         )
 
         files = [self._parse_file(f) for f in result.get("files", [])]
@@ -148,7 +145,7 @@ class DriveService:
             file_id=file_id,
             add_parents=new_parent_id,
             remove_parents=remove_parents,
-            fields="id,name,mimeType,parents,webViewLink"
+            fields="id,name,mimeType,parents,webViewLink",
         )
         return self._parse_file(result)
 
@@ -161,6 +158,16 @@ class DriveService:
         """Permanently delete a file."""
         self._client.delete_file(file_id=file_id)
         logger.info("Permanently deleted file: %s", file_id)
+
+    def restore_file(self, file_id: str) -> None:
+        """Restore a file from trash."""
+        self._client.update_file(file_id=file_id, body={"trashed": False})
+        logger.info("Restored file: %s", file_id)
+
+    def get_file_metadata(self, file_id: str) -> DriveFile:
+        """Get full metadata for a file."""
+        result = self._client.get_file(file_id=file_id)
+        return self._parse_file(result)
 
     # --- Permissions ---
 
@@ -185,10 +192,7 @@ class DriveService:
 
         fields = "id,role,type,emailAddress,displayName,domain"
         result = self._client.create_permission(
-            file_id=file_id,
-            body=body,
-            send_notification_email=send_notification,
-            fields=fields
+            file_id=file_id, body=body, send_notification_email=send_notification, fields=fields
         )
 
         return self._parse_permission(result)
@@ -196,18 +200,20 @@ class DriveService:
     def list_permissions(self, file_id: str) -> list[DrivePermission]:
         """List all permissions for a file."""
         result = self._client.list_permissions(
-            file_id=file_id,
-            fields="permissions(id,role,type,emailAddress,displayName,domain)"
+            file_id=file_id, fields="permissions(id,role,type,emailAddress,displayName,domain)"
         )
 
-        return [
-            self._parse_permission(p) for p in result.get("permissions", [])
-        ]
+        return [self._parse_permission(p) for p in result.get("permissions", [])]
 
     def remove_permission(self, file_id: str, permission_id: str) -> None:
         """Remove a permission from a file."""
         self._client.delete_permission(file_id=file_id, permission_id=permission_id)
         logger.info("Removed permission %s from file %s", permission_id, file_id)
+
+    def transfer_ownership(self, file_id: str, email: str) -> DrivePermission:
+        """Transfer ownership of a file to another user."""
+        result = self._client.transfer_ownership(file_id=file_id, email=email)
+        return self._parse_permission(result)
 
     # --- Parsing Helpers ---
 

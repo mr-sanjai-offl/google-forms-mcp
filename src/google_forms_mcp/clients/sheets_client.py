@@ -33,12 +33,17 @@ class SheetsClient(BaseGoogleClient):
             Spreadsheet metadata.
         """
         request = self._resource.spreadsheets().get(
-            spreadsheetId=spreadsheet_id,
-            includeGridData=include_grid_data
+            spreadsheetId=spreadsheet_id, includeGridData=include_grid_data
         )
         return self.execute(request)
 
-    def get_values(self, spreadsheet_id: str, range_name: str, value_render_option: str = "FORMATTED_VALUE", date_time_render_option: str = "SERIAL_NUMBER") -> dict[str, Any]:
+    def get_values(
+        self,
+        spreadsheet_id: str,
+        range_name: str,
+        value_render_option: str = "FORMATTED_VALUE",
+        date_time_render_option: str = "SERIAL_NUMBER",
+    ) -> dict[str, Any]:
         """Read values from a range.
 
         Args:
@@ -50,15 +55,25 @@ class SheetsClient(BaseGoogleClient):
         Returns:
             Value range data.
         """
-        request = self._resource.spreadsheets().values().get(
-            spreadsheetId=spreadsheet_id,
-            range=range_name,
-            valueRenderOption=value_render_option,
-            dateTimeRenderOption=date_time_render_option
+        request = (
+            self._resource.spreadsheets()
+            .values()
+            .get(
+                spreadsheetId=spreadsheet_id,
+                range=range_name,
+                valueRenderOption=value_render_option,
+                dateTimeRenderOption=date_time_render_option,
+            )
         )
         return self.execute(request)
 
-    def update_values(self, spreadsheet_id: str, range_name: str, body: dict[str, Any], value_input_option: str = "USER_ENTERED") -> dict[str, Any]:
+    def update_values(
+        self,
+        spreadsheet_id: str,
+        range_name: str,
+        body: dict[str, Any],
+        value_input_option: str = "USER_ENTERED",
+    ) -> dict[str, Any]:
         """Update values in a range.
 
         Args:
@@ -70,15 +85,26 @@ class SheetsClient(BaseGoogleClient):
         Returns:
             Update response.
         """
-        request = self._resource.spreadsheets().values().update(
-            spreadsheetId=spreadsheet_id,
-            range=range_name,
-            body=body,
-            valueInputOption=value_input_option
+        request = (
+            self._resource.spreadsheets()
+            .values()
+            .update(
+                spreadsheetId=spreadsheet_id,
+                range=range_name,
+                body=body,
+                valueInputOption=value_input_option,
+            )
         )
         return self.execute(request, token_cost=2)
 
-    def append_values(self, spreadsheet_id: str, range_name: str, body: dict[str, Any], value_input_option: str = "USER_ENTERED", insert_data_option: str = "INSERT_ROWS") -> dict[str, Any]:
+    def append_values(
+        self,
+        spreadsheet_id: str,
+        range_name: str,
+        body: dict[str, Any],
+        value_input_option: str = "USER_ENTERED",
+        insert_data_option: str = "INSERT_ROWS",
+    ) -> dict[str, Any]:
         """Append values to a range.
 
         Args:
@@ -91,11 +117,36 @@ class SheetsClient(BaseGoogleClient):
         Returns:
             Append response.
         """
-        request = self._resource.spreadsheets().values().append(
-            spreadsheetId=spreadsheet_id,
-            range=range_name,
-            body=body,
-            valueInputOption=value_input_option,
-            insertDataOption=insert_data_option
+        request = (
+            self._resource.spreadsheets()
+            .values()
+            .append(
+                spreadsheetId=spreadsheet_id,
+                range=range_name,
+                body=body,
+                valueInputOption=value_input_option,
+                insertDataOption=insert_data_option,
+            )
+        )
+        return self.execute(request, token_cost=2)
+
+    def clear_values(self, spreadsheet_id: str, range_name: str) -> dict[str, Any]:
+        """Clear values in a range.
+
+        Args:
+            spreadsheet_id: The ID of the spreadsheet.
+            range_name: The A1 notation of the range to clear.
+
+        Returns:
+            Clear response.
+        """
+        request = (
+            self._resource.spreadsheets()
+            .values()
+            .clear(
+                spreadsheetId=spreadsheet_id,
+                range=range_name,
+                body={},
+            )
         )
         return self.execute(request, token_cost=2)

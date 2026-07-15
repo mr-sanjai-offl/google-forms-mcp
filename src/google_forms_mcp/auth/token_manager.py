@@ -21,7 +21,7 @@ class TokenManager:
 
     Supports multiple accounts (profiles) stored in a single JSON file
     or individual files, depending on the implementation.
-    Here we store a dictionary of profiles in a single JSON file with 
+    Here we store a dictionary of profiles in a single JSON file with
     owner-only permissions (0600 on Unix).
     """
 
@@ -101,7 +101,7 @@ class TokenManager:
 
     def delete_token(self, profile: str = "default") -> None:
         """Delete a profile's token from disk.
-        
+
         Args:
             profile: Name of the profile.
         """
@@ -113,7 +113,7 @@ class TokenManager:
 
     def list_profiles(self) -> list[str]:
         """List all available profiles.
-        
+
         Returns:
             List of profile names.
         """

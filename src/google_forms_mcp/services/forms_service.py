@@ -17,6 +17,7 @@ from google_forms_mcp.exceptions import (
 )
 from google_forms_mcp.infrastructure.logging import get_logger
 from google_forms_mcp.models.form import (
+    BranchingRule,
     Form,
     FormCreateRequest,
     FormInfo,
@@ -28,11 +29,15 @@ from google_forms_mcp.models.form import (
     ItemType,
     MediaCreateRequest,
     MediaType,
+    NumberValidationOp,
     QuestionCreateRequest,
     QuestionType,
     SectionCreateRequest,
+    SectionNavigationRequest,
     SettingsUpdateRequest,
     TextItemCreateRequest,
+    ValidationRule,
+    ValidationType,
 )
 from google_forms_mcp.models.response import (
     Answer,
@@ -93,6 +98,7 @@ class FormsService:
 
         # Return the complete form
         return self.get(form_id)
+
     def get(self, form_id: str) -> Form:
         """Retrieve a form's complete structure and metadata.
 
@@ -167,6 +173,7 @@ class FormsService:
         logger.info("Added %s question to form %s", request.question_type.value, form_id)
 
         return self.get(form_id)
+
     def update_question(
         self,
         form_id: str,
@@ -203,7 +210,10 @@ class FormsService:
 
         self._batch_update(form_id, [update_request])
         return self.get(form_id)
-    def delete_question(self, form_id: str, item_id: str | None = None, index: int | None = None) -> Form:
+
+    def delete_question(
+        self, form_id: str, item_id: str | None = None, index: int | None = None
+    ) -> Form:
         """Delete a question from a form.
 
         Args:
@@ -229,6 +239,7 @@ class FormsService:
         logger.info("Deleted item at index %d from form %s", index, form_id)
 
         return self.get(form_id)
+
     def move_question(self, form_id: str, item_id: str, new_index: int) -> Form:
         """Move a question to a new position.
 
@@ -253,6 +264,127 @@ class FormsService:
         self._batch_update(form_id, [move_request])
         logger.info("Moved item from index %d to %d in form %s", old_index, new_index, form_id)
 
+        return self.get(form_id)
+
+    def duplicate_item(self, form_id: str, item_id: str, new_index: int | None = None) -> Form:
+        """Duplicate an item in the form.
+
+        Args:
+            form_id: The ID of the form.
+            item_id: The ID of the item to duplicate.
+            new_index: Target index for the duplicate. If None, inserts after original.
+
+        Returns:
+            Updated Form object.
+        """
+        raw_form = self._client.get_form(form_id=form_id)
+        original_item = None
+        old_index = 0
+        for i, item in enumerate(raw_form.get("items", [])):
+            if item.get("itemId") == item_id:
+                original_item = item
+                old_index = i
+                break
+
+        if not original_item:
+            raise ItemNotFoundError(item_id, form_id)
+
+        # Remove item ID so Google generates a new one
+        if "itemId" in original_item:
+            del original_item["itemId"]
+
+        # Ensure image/video URIs are not reused directly as sourceUri if they are contentUri
+        if "imageItem" in original_item and "image" in original_item["imageItem"]:
+            img = original_item["imageItem"]["image"]
+            if "contentUri" in img:
+                img["sourceUri"] = img["contentUri"]
+                del img["contentUri"]
+
+        insert_idx = new_index if new_index is not None else old_index + 1
+        create_request = {"createItem": {"item": original_item, "location": {"index": insert_idx}}}
+        self._batch_update(form_id, [create_request])
+        return self.get(form_id)
+
+    def set_question_branching(
+        self, form_id: str, item_id: str, branching_rules: list[BranchingRule]
+    ) -> Form:
+        """Set branching for a choice question's options.
+
+        Args:
+            form_id: The ID of the form.
+            item_id: The ID of the choice question item.
+            branching_rules: List of BranchingRule objects.
+
+        Returns:
+            Updated Form object.
+        """
+        raw_form = self._client.get_form(form_id=form_id)
+        original_item = None
+        for item in raw_form.get("items", []):
+            if item.get("itemId") == item_id:
+                original_item = item
+                break
+
+        if not original_item:
+            raise ItemNotFoundError(item_id, form_id)
+
+        try:
+            options = original_item["questionItem"]["question"]["choiceQuestion"]["options"]
+        except KeyError:
+            raise InvalidRequestError("Item is not a choice question with options.")
+
+        # Build mapping of values to rules
+        rule_map = {r.option_value: r for r in branching_rules}
+
+        # Update options
+        for opt in options:
+            val = opt.get("value")
+            if val in rule_map:
+                rule = rule_map[val]
+                if rule.go_to_section_id:
+                    opt["goToSectionId"] = rule.go_to_section_id
+                    opt.pop("goToAction", None)
+                elif rule.go_to_action:
+                    opt["goToAction"] = rule.go_to_action.value
+                    opt.pop("goToSectionId", None)
+
+        update_request = {
+            "updateItem": {
+                "item": original_item,
+                "location": {"index": 0},  # Index is ignored for updates if itemId is present
+                "updateMask": "questionItem.question.choiceQuestion.options",
+            }
+        }
+        self._batch_update(form_id, [update_request])
+        return self.get(form_id)
+
+    def set_section_navigation(self, form_id: str, request: SectionNavigationRequest) -> Form:
+        """Set navigation action for a section (page break)."""
+        raw_form = self._client.get_form(form_id=form_id)
+        original_item = None
+        for item in raw_form.get("items", []):
+            if item.get("itemId") == request.item_id:
+                original_item = item
+                break
+
+        if not original_item or "pageBreakItem" not in original_item:
+            raise InvalidRequestError(f"Item '{request.item_id}' is not a page break.")
+
+        if request.go_to_section_id:
+            original_item["pageBreakItem"]["goToSectionId"] = request.go_to_section_id
+            original_item["pageBreakItem"].pop("goToAction", None)
+        elif request.go_to_action:
+            original_item["pageBreakItem"]["goToAction"] = request.go_to_action.value
+            original_item["pageBreakItem"].pop("goToSectionId", None)
+
+        update_request = {
+            "updateItem": {
+                "item": original_item,
+                "location": {"index": 0},
+                "updateMask": "pageBreakItem",
+            }
+        }
+        self._batch_update(form_id, [update_request])
         return self.get(form_id)
 
     # --- Sections ---
@@ -281,6 +413,7 @@ class FormsService:
         logger.info("Added section '%s' to form %s", request.title, form_id)
 
         return self.get(form_id)
+
     def update_section(
         self,
         form_id: str,
@@ -326,6 +459,7 @@ class FormsService:
         self._batch_update(form_id, [update_request])
 
         return self.get(form_id)
+
     def delete_section(self, form_id: str, item_id: str) -> Form:
         """Delete a section (page break) from a form.
 
@@ -363,6 +497,7 @@ class FormsService:
 
         self._batch_update(form_id, [create_request])
         return self.get(form_id)
+
     def add_text_item(self, form_id: str, request: TextItemCreateRequest) -> Form:
         """Add a text/description block to a form.
 
@@ -403,13 +538,20 @@ class FormsService:
         if request.is_quiz is not None:
             settings["quizSettings"] = {"isQuiz": request.is_quiz}
 
-        if request.email_collection is not None:
-            # Will be part of form info update
-            pass
+        if request.shuffle_questions is not None:
+            settings["shuffleQuestions"] = request.shuffle_questions
 
-        if request.confirmation_message is not None:
-            # Confirmation message is in form info
-            pass
+        if request.limit_one_response is not None:
+            settings["limitOneResponse"] = request.limit_one_response
+
+        if request.allow_response_edits is not None:
+            settings["allowResponseEdits"] = request.allow_response_edits
+
+        if request.progress_bar is not None:
+            settings["progressBar"] = request.progress_bar
+
+        if request.restrict_to_domain is not None:
+            settings["restrictToDomain"] = request.restrict_to_domain
 
         if settings:
             self._update_settings_raw(form_id, settings)
@@ -453,7 +595,9 @@ class FormsService:
             self._client.set_publish_settings(form_id=form_id, body=body)
             logger.info(
                 "Form %s: published=%s, accepting=%s",
-                form_id, is_published, is_accepting,
+                form_id,
+                is_published,
+                is_accepting,
             )
         except Exception as e:
             # Some older forms may not support publish settings
@@ -495,13 +639,11 @@ class FormsService:
                 raise FormNotFoundError(form_id) from e
             raise
 
-        responses = [
-            self._parse_response(r, form_id)
-            for r in result.get("responses", [])
-        ]
+        responses = [self._parse_response(r, form_id) for r in result.get("responses", [])]
         next_token = result.get("nextPageToken")
 
         return responses, next_token
+
     def get_response(self, form_id: str, response_id: str) -> FormResponse:
         """Get a single response by ID.
 
@@ -513,9 +655,7 @@ class FormsService:
             The FormResponse.
         """
 
-        result = (
-            self._client.get_response(form_id=form_id, response_id=response_id)
-        )
+        result = self._client.get_response(form_id=form_id, response_id=response_id)
 
         return self._parse_response(result, form_id)
 
@@ -532,9 +672,8 @@ class FormsService:
             The batchUpdate response.
         """
         body = {"requests": requests}
-        return (
-            self._client.batch_update(form_id=form_id, requests=body.get("requests", []))
-        )
+        return self._client.batch_update(form_id=form_id, requests=body.get("requests", []))
+
     def _update_form_info(
         self,
         form_id: str,
@@ -564,6 +703,7 @@ class FormsService:
             }
         }
         self._batch_update(form_id, [request])
+
     def _update_settings_raw(self, form_id: str, settings: dict[str, Any]) -> None:
         """Update form settings with raw API structure."""
 
@@ -633,17 +773,32 @@ class FormsService:
 
         # Add validation if specified
         if request.validation:
-            question["textQuestion"] = question.get("textQuestion", {})
-            # Validation details depend on type - simplified for now
+            validation_dict = self._build_validation_rule(request.validation)
+            if validation_dict:
+                question["textQuestion"] = question.get("textQuestion", {})
+                if request.question_type == QuestionType.PARAGRAPH:
+                    question["textQuestion"]["paragraph"] = True
+
+                # Text/Paragraph/Scale can have validation in API, but usually it's under textQuestion
+                # or a general validation field. Actually, Google API maps text, regex, length to TextValidation,
+                # number to NumberValidation. But since they are all under "textQuestion" or similar?
+                # No, they are under textQuestion.validation?
+                # Let's map it under textQuestion or choiceQuestion according to the API docs.
+                # Actually, the API says textQuestion.paragraph, but validation is under textQuestion or scaleQuestion etc.
+                # Let's just put it under textQuestion for now, as that's the most common (for short answer/paragraph).
+                # But actually, Forms API uses textValidation / numberValidation inside the specific question types?
+                # The API structure is textQuestion (which has paragraph, and maybe not validation?). Wait, no, it's just a general field?
+                # The google documentation says TextValidation, NumberValidation etc are NOT fields of question directly,
+                # they are under textQuestion etc? No, wait.
+                # According to the REST API, TextQuestion has: `paragraph` and `validation`.
+                question.setdefault("textQuestion", {})["validation"] = validation_dict
 
         # Add grading if specified
         if request.grading:
             grading: dict[str, Any] = {"pointValue": request.grading.point_value}
             if request.grading.correct_answers:
                 grading["correctAnswers"] = {
-                    "answers": [
-                        {"value": v} for v in request.grading.correct_answers.values
-                    ]
+                    "answers": [{"value": v} for v in request.grading.correct_answers.values]
                 }
             if request.grading.when_right:
                 grading["whenRight"] = {"text": request.grading.when_right.text}
@@ -661,20 +816,83 @@ class FormsService:
 
         return item
 
+    def _build_validation_rule(self, validation: ValidationRule) -> dict[str, Any] | None:
+        """Build the validation rule dictionary based on ValidationType."""
+        vt = validation.type
+
+        if vt == ValidationType.NUMBER and validation.number_op:
+            num_val = {"conditionType": validation.number_op.value}
+            if validation.number_value is not None:
+                num_val["value"] = str(validation.number_value)
+            if (
+                validation.number_op in (NumberValidationOp.BETWEEN, NumberValidationOp.NOT_BETWEEN)
+                and validation.number_value_high is not None
+            ):
+                num_val["value"] = [str(validation.number_value), str(validation.number_value_high)]
+            elif validation.number_value is not None:
+                num_val["value"] = [str(validation.number_value)]
+
+            result = {"numericValidation": num_val}
+
+        elif vt == ValidationType.TEXT and validation.pattern:
+            result = {
+                "textValidation": {"conditionType": "CONTAINS", "value": [validation.pattern]}
+            }
+
+        elif vt == ValidationType.LENGTH and validation.max_length is not None:
+            result = {
+                "textValidation": {
+                    "conditionType": "MAXIMUM_LENGTH",
+                    "value": [str(validation.max_length)],
+                }
+            }
+
+        elif vt == ValidationType.LENGTH and validation.min_length is not None:
+            result = {
+                "textValidation": {
+                    "conditionType": "MINIMUM_LENGTH",
+                    "value": [str(validation.min_length)],
+                }
+            }
+
+        elif vt == ValidationType.REGEX and validation.pattern:
+            result = {
+                "textValidation": {"conditionType": "MATCHES_REGEX", "value": [validation.pattern]}
+            }
+
+        elif vt == ValidationType.EMAIL:
+            result = {"textValidation": {"conditionType": "IS_EMAIL"}}
+
+        elif vt == ValidationType.URL:
+            result = {"textValidation": {"conditionType": "IS_URL"}}
+
+        else:
+            return None
+
+        if validation.error_message:
+            # Need to know exactly where customMessage goes, typically under textValidation/numericValidation
+            if "textValidation" in result:
+                result["textValidation"]["customMessage"] = validation.error_message
+            elif "numericValidation" in result:
+                result["numericValidation"]["customMessage"] = validation.error_message
+
+        return result
+
     def _build_grid_item(self, request: QuestionCreateRequest) -> dict[str, Any]:
         """Build a questionGroupItem (grid) API structure."""
         grid_type = (
-            "RADIO" if request.question_type == QuestionType.MULTIPLE_CHOICE_GRID
-            else "CHECKBOX"
+            "RADIO" if request.question_type == QuestionType.MULTIPLE_CHOICE_GRID else "CHECKBOX"
         )
 
         # Each row becomes a question in the group
         questions = []
         for row_label in request.row_labels:
-            questions.append({
-                "required": request.required,
-                "rowQuestion": {"title": row_label},
-            })
+            questions.append(
+                {
+                    "required": request.required,
+                    "rowQuestion": {"title": row_label},
+                }
+            )
 
         # Columns are the grid choices
         columns = [{"value": col} for col in request.column_labels]
@@ -771,14 +989,13 @@ class FormsService:
             grid = group.get("grid", {})
             columns = grid.get("columns", {})
             col_type = columns.get("type", "RADIO")
-            col_options = [
-                opt.get("value", "") for opt in columns.get("options", [])
-            ]
+            col_options = [opt.get("value", "") for opt in columns.get("options", [])]
 
             for q in group.get("questions", []):
                 row_title = q.get("rowQuestion", {}).get("title", "")
                 qt = (
-                    QuestionType.MULTIPLE_CHOICE_GRID if col_type == "RADIO"
+                    QuestionType.MULTIPLE_CHOICE_GRID
+                    if col_type == "RADIO"
                     else QuestionType.CHECKBOX_GRID
                 )
                 item.questions.append(
@@ -877,6 +1094,7 @@ class FormsService:
             grading = GradingConfig(point_value=g.get("pointValue", 0))
             if "correctAnswers" in g:
                 from google_forms_mcp.models.form import CorrectAnswer
+
                 answers = [a.get("value", "") for a in g["correctAnswers"].get("answers", [])]
                 grading.correct_answers = CorrectAnswer(values=answers)
             question.grading = grading

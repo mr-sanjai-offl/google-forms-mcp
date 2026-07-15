@@ -99,9 +99,7 @@ def build_credentials_from_secrets_file(settings: Settings) -> Credentials:
         logger.info("Obtained credentials via interactive OAuth flow")
         return creds
     except Exception as e:
-        raise InvalidCredentialsError(
-            f"Failed to complete OAuth flow: {e}"
-        ) from e
+        raise InvalidCredentialsError(f"Failed to complete OAuth flow: {e}") from e
 
 
 def refresh_credentials(creds: Credentials) -> Credentials:
@@ -117,18 +115,14 @@ def refresh_credentials(creds: Credentials) -> Credentials:
         RefreshFailedError: If the refresh attempt fails.
     """
     if not creds.refresh_token:
-        raise RefreshFailedError(
-            "No refresh token available. Please re-authenticate."
-        )
+        raise RefreshFailedError("No refresh token available. Please re-authenticate.")
 
     try:
         creds.refresh(Request())
         logger.debug("Successfully refreshed access token")
         return creds
     except Exception as e:
-        raise RefreshFailedError(
-            f"Failed to refresh access token: {e}"
-        ) from e
+        raise RefreshFailedError(f"Failed to refresh access token: {e}") from e
 
 
 def credentials_to_dict(creds: Credentials) -> dict[str, Any]:

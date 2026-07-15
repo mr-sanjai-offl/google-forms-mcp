@@ -176,10 +176,10 @@ class CredentialManager:
 
     def _validate_scopes(self, creds: Credentials) -> None:
         """Validate that the token has all required scopes.
-        
+
         Args:
             creds: The credentials to check.
-            
+
         Raises:
             MissingScopesError: If any required scopes are missing.
         """

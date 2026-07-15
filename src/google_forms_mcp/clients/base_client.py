@@ -85,7 +85,10 @@ class BaseGoogleClient:
 
                 logger.warning(
                     "Google API request failed (HTTP %d). Retry %d/%d in %.1fs",
-                    status_code, attempt + 1, max_retries, delay
+                    status_code,
+                    attempt + 1,
+                    max_retries,
+                    delay,
                 )
                 time.sleep(delay)
                 delay *= backoff_factor
@@ -96,17 +99,20 @@ class BaseGoogleClient:
 
                 logger.warning(
                     "Network error (%s). Retry %d/%d in %.1fs",
-                    type(e).__name__, attempt + 1, max_retries, delay
+                    type(e).__name__,
+                    attempt + 1,
+                    max_retries,
+                    delay,
                 )
                 time.sleep(delay)
                 delay *= backoff_factor
 
     def _map_and_raise_error(self, error: HttpError) -> None:
         """Map a googleapiclient HttpError to a GoogleFormsMCPError and raise it.
-        
+
         Args:
             error: The raw HTTP error.
-            
+
         Raises:
             GoogleFormsMCPError: The mapped domain exception.
         """
@@ -116,9 +122,10 @@ class BaseGoogleClient:
         # Try to extract detailed error message from JSON body if available
         details = ""
         try:
-            if hasattr(error, 'content') and error.content:
+            if hasattr(error, "content") and error.content:
                 import json
-                body = json.loads(error.content.decode('utf-8'))
+
+                body = json.loads(error.content.decode("utf-8"))
                 if "error" in body and "message" in body["error"]:
                     details = f": {body['error']['message']}"
         except Exception:

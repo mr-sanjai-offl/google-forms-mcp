@@ -49,15 +49,21 @@ class FormsClient(BaseGoogleClient):
         request = self._resource.forms().batchUpdate(formId=form_id, body=body)
         return self.execute(request, token_cost=2)
 
-    def list_responses(self, form_id: str, page_size: int = 50, page_token: str | None = None, filter_str: str | None = None) -> dict[str, Any]:
+    def list_responses(
+        self,
+        form_id: str,
+        page_size: int = 50,
+        page_token: str | None = None,
+        filter_str: str | None = None,
+    ) -> dict[str, Any]:
         """List responses for a form.
-        
+
         Args:
             form_id: The ID of the form.
             page_size: Maximum number of responses to return.
             page_token: Page token for pagination.
             filter_str: Filter expression.
-            
+
         Returns:
             List of responses and next page token.
         """
@@ -72,11 +78,11 @@ class FormsClient(BaseGoogleClient):
 
     def get_response(self, form_id: str, response_id: str) -> dict[str, Any]:
         """Get a specific response for a form.
-        
+
         Args:
             form_id: The ID of the form.
             response_id: The ID of the response.
-            
+
         Returns:
             The response details.
         """
@@ -85,11 +91,11 @@ class FormsClient(BaseGoogleClient):
 
     def set_publish_settings(self, form_id: str, body: dict[str, Any]) -> dict[str, Any]:
         """Set publish settings for a form.
-        
+
         Args:
             form_id: The ID of the form.
             body: Publish settings specification.
-            
+
         Returns:
             Publish settings response.
         """

@@ -10,7 +10,9 @@ from google_forms_mcp.clients.base_client import BaseGoogleClient
 class DriveClient(BaseGoogleClient):
     """Client for Google Drive API v3."""
 
-    def create_file(self, body: dict[str, Any], fields: str = "id, name, mimeType") -> dict[str, Any]:
+    def create_file(
+        self, body: dict[str, Any], fields: str = "id, name, mimeType"
+    ) -> dict[str, Any]:
         """Create a file or folder.
 
         Args:
@@ -23,7 +25,13 @@ class DriveClient(BaseGoogleClient):
         request = self._resource.files().create(body=body, fields=fields)
         return self.execute(request)
 
-    def list_files(self, query: str, fields: str = "nextPageToken, files(id, name, mimeType, parents, trashed)", page_size: int = 10, page_token: str | None = None) -> dict[str, Any]:
+    def list_files(
+        self,
+        query: str,
+        fields: str = "nextPageToken, files(id, name, mimeType, parents, trashed)",
+        page_size: int = 10,
+        page_token: str | None = None,
+    ) -> dict[str, Any]:
         """Search for files.
 
         Args:
@@ -42,7 +50,14 @@ class DriveClient(BaseGoogleClient):
         request = self._resource.files().list(**kwargs)
         return self.execute(request)
 
-    def update_file(self, file_id: str, body: dict[str, Any] | None = None, add_parents: str | None = None, remove_parents: str | None = None, fields: str = "id, name, parents, trashed") -> dict[str, Any]:
+    def update_file(
+        self,
+        file_id: str,
+        body: dict[str, Any] | None = None,
+        add_parents: str | None = None,
+        remove_parents: str | None = None,
+        fields: str = "id, name, parents, trashed",
+    ) -> dict[str, Any]:
         """Update a file's metadata or parent folders (move).
 
         Args:
@@ -75,7 +90,9 @@ class DriveClient(BaseGoogleClient):
         request = self._resource.files().delete(fileId=file_id)
         self.execute(request)
 
-    def copy_file(self, file_id: str, body: dict[str, Any], fields: str = "id, name, parents") -> dict[str, Any]:
+    def copy_file(
+        self, file_id: str, body: dict[str, Any], fields: str = "id, name, parents"
+    ) -> dict[str, Any]:
         """Copy a file.
 
         Args:
@@ -89,7 +106,13 @@ class DriveClient(BaseGoogleClient):
         request = self._resource.files().copy(fileId=file_id, body=body, fields=fields)
         return self.execute(request)
 
-    def create_permission(self, file_id: str, body: dict[str, Any], send_notification_email: bool = False, fields: str = "id, type, role, emailAddress") -> dict[str, Any]:
+    def create_permission(
+        self,
+        file_id: str,
+        body: dict[str, Any],
+        send_notification_email: bool = False,
+        fields: str = "id, type, role, emailAddress",
+    ) -> dict[str, Any]:
         """Create a sharing permission on a file.
 
         Args:
@@ -102,14 +125,13 @@ class DriveClient(BaseGoogleClient):
             Created permission details.
         """
         request = self._resource.permissions().create(
-            fileId=file_id,
-            body=body,
-            sendNotificationEmail=send_notification_email,
-            fields=fields
+            fileId=file_id, body=body, sendNotificationEmail=send_notification_email, fields=fields
         )
         return self.execute(request)
 
-    def list_permissions(self, file_id: str, fields: str = "permissions(id, type, role, emailAddress)") -> dict[str, Any]:
+    def list_permissions(
+        self, file_id: str, fields: str = "permissions(id, type, role, emailAddress)"
+    ) -> dict[str, Any]:
         """List permissions for a file.
 
         Args:
@@ -131,3 +153,42 @@ class DriveClient(BaseGoogleClient):
         """
         request = self._resource.permissions().delete(fileId=file_id, permissionId=permission_id)
         self.execute(request)
+
+    def get_file(
+        self,
+        file_id: str,
+        fields: str = "id,name,mimeType,createdTime,modifiedTime,size,parents,webViewLink,trashed,owners",
+    ) -> dict[str, Any]:
+        """Get metadata for a single file.
+
+        Args:
+            file_id: The ID of the file.
+            fields: Fields to include in the response.
+
+        Returns:
+            File metadata.
+        """
+        request = self._resource.files().get(fileId=file_id, fields=fields)
+        return self.execute(request)
+
+    def transfer_ownership(
+        self, file_id: str, email: str, fields: str = "id, type, role, emailAddress"
+    ) -> dict[str, Any]:
+        """Transfer file ownership to another user.
+
+        Args:
+            file_id: The ID of the file.
+            email: Email of the new owner.
+            fields: Fields to include in the response.
+
+        Returns:
+            Created permission.
+        """
+        body = {"role": "owner", "type": "user", "emailAddress": email}
+        request = self._resource.permissions().create(
+            fileId=file_id,
+            body=body,
+            transferOwnership=True,
+            fields=fields,
+        )
+        return self.execute(request)

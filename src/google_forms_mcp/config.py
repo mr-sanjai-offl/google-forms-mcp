@@ -122,25 +122,21 @@ class Settings(BaseSettings):
     def has_env_credentials(self) -> bool:
         """Check if environment variable credentials are configured."""
         return bool(
-            self.google_client_id
-            and self.google_client_secret
-            and self.google_refresh_token
+            self.google_client_id and self.google_client_secret and self.google_refresh_token
         )
 
     @property
     def has_client_secrets_file(self) -> bool:
         """Check if a client secrets file is configured."""
         return bool(
-            self.google_client_secrets_file
-            and os.path.isfile(self.google_client_secrets_file)
+            self.google_client_secrets_file and os.path.isfile(self.google_client_secrets_file)
         )
 
     @property
     def has_service_account(self) -> bool:
         """Check if a service account file is configured."""
         return bool(
-            self.google_service_account_file
-            and os.path.isfile(self.google_service_account_file)
+            self.google_service_account_file and os.path.isfile(self.google_service_account_file)
         )
 
     @property

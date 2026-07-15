@@ -131,3 +131,23 @@ def register_sheets_tools(mcp: Any, sheets_service: Any) -> None:
             return csv_data
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"
+
+    @mcp.tool()
+    def clear_sheet_data(
+        spreadsheet_id: str,
+        range: str,
+    ) -> str:
+        """Clear data from a spreadsheet range.
+
+        Args:
+            spreadsheet_id: ID of the spreadsheet.
+            range: A1 notation range to clear (e.g., "Sheet1!A1:D10").
+
+        Returns:
+            JSON string with clear result details.
+        """
+        try:
+            result = sheets_service.clear_range(spreadsheet_id, range)
+            return json.dumps(result.model_dump(exclude_none=True), indent=2)
+        except GoogleFormsMCPError as e:
+            return f"Error: {e.message}"

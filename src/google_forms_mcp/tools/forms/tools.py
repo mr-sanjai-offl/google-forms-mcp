@@ -138,10 +138,14 @@ def register_form_tools(mcp: Any, forms_service: Any, drive_service: Any) -> Non
         try:
             if permanent:
                 drive_service.delete_file(form_id)
-                return json.dumps({"status": "success", "message": f"Form {form_id} permanently deleted."})
+                return json.dumps(
+                    {"status": "success", "message": f"Form {form_id} permanently deleted."}
+                )
             else:
                 drive_service.trash_file(form_id)
-                return json.dumps({"status": "success", "message": f"Form {form_id} moved to trash."})
+                return json.dumps(
+                    {"status": "success", "message": f"Form {form_id} moved to trash."}
+                )
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"
 
@@ -190,8 +194,12 @@ def register_form_tools(mcp: Any, forms_service: Any, drive_service: Any) -> Non
             Confirmation message.
         """
         try:
-            forms_service.publish(form_id, is_published=is_accepting_responses, is_accepting=is_accepting_responses)
-            status = "published and accepting responses" if is_accepting_responses else "unpublished"
+            forms_service.publish(
+                form_id, is_published=is_accepting_responses, is_accepting=is_accepting_responses
+            )
+            status = (
+                "published and accepting responses" if is_accepting_responses else "unpublished"
+            )
             return json.dumps({"status": "success", "message": f"Form {form_id} is now {status}."})
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"
@@ -268,7 +276,9 @@ def register_form_tools(mcp: Any, forms_service: Any, drive_service: Any) -> Non
             if point_value is not None or correct_answers:
                 grading = GradingConfig(
                     point_value=point_value or 0,
-                    correct_answers=CorrectAnswer(values=correct_answers or []) if correct_answers else None,
+                    correct_answers=CorrectAnswer(values=correct_answers or [])
+                    if correct_answers
+                    else None,
                     when_right=Feedback(text=when_right_feedback) if when_right_feedback else None,
                     when_wrong=Feedback(text=when_wrong_feedback) if when_wrong_feedback else None,
                 )
@@ -351,6 +361,24 @@ def register_form_tools(mcp: Any, forms_service: Any, drive_service: Any) -> Non
             return f"Error: {e.message}"
 
     @mcp.tool()
+    def duplicate_question(form_id: str, item_id: str, new_index: int | None = None) -> str:
+        """Duplicate an existing question or section within a form.
+
+        Args:
+            form_id: The ID of the form.
+            item_id: The ID of the item to duplicate.
+            new_index: Target position for the duplicate (optional, defaults to immediately after the original).
+
+        Returns:
+            JSON string with updated form structure.
+        """
+        try:
+            form = forms_service.duplicate_item(form_id, item_id, new_index)
+            return _serialize(form)
+        except GoogleFormsMCPError as e:
+            return f"Error: {e.message}"
+
+    @mcp.tool()
     def move_question(form_id: str, item_id: str, new_index: int) -> str:
         """Move a question to a new position in the form.
 
@@ -415,7 +443,9 @@ def register_form_tools(mcp: Any, forms_service: Any, drive_service: Any) -> Non
             JSON string with updated form structure.
         """
         try:
-            form = forms_service.update_section(form_id, item_id, title=title, description=description)
+            form = forms_service.update_section(
+                form_id, item_id, title=title, description=description
+            )
             return _serialize(form)
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"
@@ -441,11 +471,91 @@ def register_form_tools(mcp: Any, forms_service: Any, drive_service: Any) -> Non
             return f"Error: {e.message}"
 
     @mcp.tool()
+    def set_question_branching(
+        form_id: str,
+        item_id: str,
+        rules: list[dict[str, str]],
+    ) -> str:
+        """Set branching for a choice question's options.
+
+        Branching determines where the user goes after completing the section containing this question.
+        Note: The form item MUST be a multiple-choice or dropdown question.
+
+        Args:
+            form_id: The ID of the form.
+            item_id: The ID of the choice question item.
+            rules: List of dictionaries with 'option_value' and either 'go_to_section_id' or 'go_to_action'.
+                   Example: [{"option_value": "Yes", "go_to_action": "SUBMIT_FORM"}, {"option_value": "No", "go_to_section_id": "012345"}]
+
+        Returns:
+            JSON string with updated form structure.
+        """
+        try:
+            from google_forms_mcp.models.form import BranchingRule, GoToAction
+
+            branching_rules = []
+            for r in rules:
+                action = None
+                if r.get("go_to_action"):
+                    action = GoToAction(r["go_to_action"].upper())
+                branching_rules.append(
+                    BranchingRule(
+                        option_value=r["option_value"],
+                        go_to_section_id=r.get("go_to_section_id"),
+                        go_to_action=action,
+                    )
+                )
+
+            form = forms_service.set_question_branching(form_id, item_id, branching_rules)
+            return _serialize(form)
+        except GoogleFormsMCPError as e:
+            return f"Error: {e.message}"
+
+    @mcp.tool()
+    def set_section_navigation(
+        form_id: str,
+        item_id: str,
+        go_to_section_id: str | None = None,
+        go_to_action: str | None = None,
+    ) -> str:
+        """Set the navigation action for a section (page break).
+
+        Determines where the user goes after completing this section.
+
+        Args:
+            form_id: The ID of the form.
+            item_id: The ID of the page break item.
+            go_to_section_id: Specific section ID to navigate to.
+            go_to_action: Action to take ("NEXT_SECTION", "RESTART_FORM", "SUBMIT_FORM").
+
+        Returns:
+            JSON string with updated form structure.
+        """
+        try:
+            from google_forms_mcp.models.form import GoToAction, SectionNavigationRequest
+
+            action = None
+            if go_to_action:
+                action = GoToAction(go_to_action.upper())
+
+            request = SectionNavigationRequest(
+                item_id=item_id, go_to_section_id=go_to_section_id, go_to_action=action
+            )
+            form = forms_service.set_section_navigation(form_id, request)
+            return _serialize(form)
+        except GoogleFormsMCPError as e:
+            return f"Error: {e.message}"
+
+    @mcp.tool()
     def update_settings(
         form_id: str,
         is_quiz: bool | None = None,
         confirmation_message: str | None = None,
         shuffle_questions: bool | None = None,
+        allow_response_edits: bool | None = None,
+        limit_one_response: bool | None = None,
+        progress_bar: bool | None = None,
+        restrict_to_domain: bool | None = None,
     ) -> str:
         """Update form-level settings.
 
@@ -454,6 +564,10 @@ def register_form_tools(mcp: Any, forms_service: Any, drive_service: Any) -> Non
             is_quiz: Enable or disable quiz mode (optional).
             confirmation_message: Message shown after form submission (optional).
             shuffle_questions: Randomize question order (optional).
+            allow_response_edits: Allow respondents to edit their responses (optional).
+            limit_one_response: Limit to 1 response per user (optional).
+            progress_bar: Show a progress bar at the bottom (optional).
+            restrict_to_domain: Restrict to users in the same domain (optional).
 
         Returns:
             JSON string with updated form details.
@@ -463,6 +577,10 @@ def register_form_tools(mcp: Any, forms_service: Any, drive_service: Any) -> Non
                 is_quiz=is_quiz,
                 confirmation_message=confirmation_message,
                 shuffle_questions=shuffle_questions,
+                allow_response_edits=allow_response_edits,
+                limit_one_response=limit_one_response,
+                progress_bar=progress_bar,
+                restrict_to_domain=restrict_to_domain,
             )
             form = forms_service.update_settings(form_id, request)
             return _serialize(form)

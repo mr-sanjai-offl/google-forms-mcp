@@ -11,19 +11,22 @@ from typing import Any
 from google_forms_mcp.exceptions import GoogleFormsMCPError
 
 
-def register_resources(mcp: Any, forms_service: Any, drive_service: Any) -> None:
+def register_resources(
+    mcp: Any, forms_service: Any, drive_service: Any, sheets_service: Any
+) -> None:
     """Register all forms-related MCP resources.
 
     Args:
         mcp: FastMCP server instance.
         forms_service: FormsService instance.
         drive_service: DriveService instance.
+        sheets_service: SheetsService instance.
     """
 
     @mcp.resource("forms://list")
     def list_forms() -> str:
         """List all Google Forms accessible to the authenticated user.
-        
+
         Searches Google Drive for files with the form mime type.
         """
         try:
@@ -35,14 +38,16 @@ def register_resources(mcp: Any, forms_service: Any, drive_service: Any) -> None
     @mcp.resource("forms://{form_id}")
     def get_form_resource(form_id: str) -> str:
         """Get the complete structure and metadata for a specific form.
-        
+
         Args:
             form_id: The ID of the form.
         """
         try:
             form = forms_service.get(form_id)
             if hasattr(form, "model_dump"):
-                return json.dumps(form.model_dump(mode="json", exclude_none=True), indent=2, default=str)
+                return json.dumps(
+                    form.model_dump(mode="json", exclude_none=True), indent=2, default=str
+                )
             return json.dumps(form, indent=2, default=str)
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"
@@ -50,7 +55,7 @@ def register_resources(mcp: Any, forms_service: Any, drive_service: Any) -> None
     @mcp.resource("forms://{form_id}/responses")
     def get_form_responses(form_id: str) -> str:
         """Get all responses for a specific form.
-        
+
         Args:
             form_id: The ID of the form.
         """
@@ -67,14 +72,18 @@ def register_resources(mcp: Any, forms_service: Any, drive_service: Any) -> None
                 if not next_token:
                     break
 
-            return json.dumps([r.model_dump(mode="json", exclude_none=True) for r in all_responses], indent=2, default=str)
+            return json.dumps(
+                [r.model_dump(mode="json", exclude_none=True) for r in all_responses],
+                indent=2,
+                default=str,
+            )
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"
 
     @mcp.resource("forms://{form_id}/summary")
     def get_form_summary(form_id: str) -> str:
         """Get aggregated summary statistics for a specific form's responses.
-        
+
         Args:
             form_id: The ID of the form.
         """
@@ -96,7 +105,43 @@ def register_resources(mcp: Any, forms_service: Any, drive_service: Any) -> None
             analytics = AnalyticsService()
             summary = analytics.compute_summary(form, all_responses)
             if hasattr(summary, "model_dump"):
-                return json.dumps(summary.model_dump(mode="json", exclude_none=True), indent=2, default=str)
+                return json.dumps(
+                    summary.model_dump(mode="json", exclude_none=True), indent=2, default=str
+                )
             return json.dumps(summary, indent=2, default=str)
+        except GoogleFormsMCPError as e:
+            return f"Error: {e.message}"
+
+    @mcp.resource("drive://file/{file_id}")
+    def get_file_metadata(file_id: str) -> str:
+        """Get the complete metadata for a specific Drive file.
+
+        Args:
+            file_id: The ID of the file.
+        """
+        try:
+            file = drive_service.get_file_metadata(file_id)
+            if hasattr(file, "model_dump"):
+                return json.dumps(
+                    file.model_dump(mode="json", exclude_none=True), indent=2, default=str
+                )
+            return json.dumps(file, indent=2, default=str)
+        except GoogleFormsMCPError as e:
+            return f"Error: {e.message}"
+
+    @mcp.resource("sheets://{spreadsheet_id}")
+    def get_spreadsheet_info(spreadsheet_id: str) -> str:
+        """Get the complete metadata for a specific Google Sheet.
+
+        Args:
+            spreadsheet_id: The ID of the spreadsheet.
+        """
+        try:
+            info = sheets_service.get_info(spreadsheet_id)
+            if hasattr(info, "model_dump"):
+                return json.dumps(
+                    info.model_dump(mode="json", exclude_none=True), indent=2, default=str
+                )
+            return json.dumps(info, indent=2, default=str)
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"

@@ -113,7 +113,7 @@ class SheetsService:
             spreadsheet_id=spreadsheet_id,
             range_name=range_str,
             body={"values": values},
-            value_input_option="USER_ENTERED"
+            value_input_option="USER_ENTERED",
         )
 
         return SheetWriteResult(
@@ -145,7 +145,7 @@ class SheetsService:
             range_name=range_str,
             body={"values": values},
             value_input_option="USER_ENTERED",
-            insert_data_option="INSERT_ROWS"
+            insert_data_option="INSERT_ROWS",
         )
 
         updates = result.get("updates", {})
@@ -181,6 +181,30 @@ class SheetsService:
             writer.writerow(row)
 
         return output.getvalue()
+
+    def clear_range(
+        self,
+        spreadsheet_id: str,
+        range_str: str,
+    ) -> SheetWriteResult:
+        """Clear values from a range.
+
+        Args:
+            spreadsheet_id: ID of the spreadsheet.
+            range_str: A1 notation range to clear.
+
+        Returns:
+            SheetWriteResult with cleared range details.
+        """
+        result = self._client.clear_values(spreadsheet_id=spreadsheet_id, range_name=range_str)
+
+        return SheetWriteResult(
+            spreadsheet_id=result.get("spreadsheetId", spreadsheet_id),
+            updated_range=result.get("clearedRange", range_str),
+            updated_rows=0,
+            updated_columns=0,
+            updated_cells=0,
+        )
 
     # --- Parsing ---
 

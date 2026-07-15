@@ -94,8 +94,7 @@ def with_retry(
                         delay = delay * (0.5 + random.random())
 
                     logger.warning(
-                        "Retryable error (HTTP %d) in %s, attempt %d/%d. "
-                        "Retrying in %.1fs...",
+                        "Retryable error (HTTP %d) in %s, attempt %d/%d. Retrying in %.1fs...",
                         status,
                         func.__name__,
                         attempt + 1,

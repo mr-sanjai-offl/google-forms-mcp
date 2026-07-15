@@ -109,7 +109,9 @@ def register_drive_tools(mcp: Any, drive_service: Any) -> None:
         """
         try:
             file = drive_service.move_file(file_id, new_parent_id, remove_from_current)
-            return json.dumps(file.model_dump(mode="json", exclude_none=True), indent=2, default=str)
+            return json.dumps(
+                file.model_dump(mode="json", exclude_none=True), indent=2, default=str
+            )
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"
 
@@ -131,7 +133,9 @@ def register_drive_tools(mcp: Any, drive_service: Any) -> None:
         """
         try:
             file = drive_service.copy_file(file_id, new_name=new_name, folder_id=folder_id)
-            return json.dumps(file.model_dump(mode="json", exclude_none=True), indent=2, default=str)
+            return json.dumps(
+                file.model_dump(mode="json", exclude_none=True), indent=2, default=str
+            )
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"
 
@@ -154,6 +158,42 @@ def register_drive_tools(mcp: Any, drive_service: Any) -> None:
             return f"Error: {e.message}"
 
     @mcp.tool()
+    def restore_file(file_id: str) -> str:
+        """Restore a file from the trash in Google Drive.
+
+        Args:
+            file_id: ID of the file to restore.
+
+        Returns:
+            Confirmation message.
+        """
+        try:
+            drive_service.restore_file(file_id)
+            return json.dumps(
+                {"status": "success", "message": f"File {file_id} restored from trash."}
+            )
+        except GoogleFormsMCPError as e:
+            return f"Error: {e.message}"
+
+    @mcp.tool()
+    def get_file_metadata(file_id: str) -> str:
+        """Get full metadata for a file in Google Drive.
+
+        Args:
+            file_id: ID of the file.
+
+        Returns:
+            JSON string with complete file details.
+        """
+        try:
+            file = drive_service.get_file_metadata(file_id)
+            return json.dumps(
+                file.model_dump(mode="json", exclude_none=True), indent=2, default=str
+            )
+        except GoogleFormsMCPError as e:
+            return f"Error: {e.message}"
+
+    @mcp.tool()
     def share_file(
         file_id: str,
         email_or_domain: str,
@@ -172,9 +212,7 @@ def register_drive_tools(mcp: Any, drive_service: Any) -> None:
             JSON string with the created permission details.
         """
         try:
-            perm = drive_service.share(
-                file_id, email_or_domain, role=role, share_type=share_type
-            )
+            perm = drive_service.share(file_id, email_or_domain, role=role, share_type=share_type)
             return json.dumps(perm.model_dump(exclude_none=True), indent=2)
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"
@@ -209,6 +247,25 @@ def register_drive_tools(mcp: Any, drive_service: Any) -> None:
         """
         try:
             drive_service.remove_permission(file_id, permission_id)
-            return json.dumps({"status": "success", "message": f"Permission {permission_id} removed."})
+            return json.dumps(
+                {"status": "success", "message": f"Permission {permission_id} removed."}
+            )
+        except GoogleFormsMCPError as e:
+            return f"Error: {e.message}"
+
+    @mcp.tool()
+    def transfer_ownership(file_id: str, email: str) -> str:
+        """Transfer file ownership to another user.
+
+        Args:
+            file_id: ID of the file.
+            email: Email address of the new owner.
+
+        Returns:
+            JSON string with the created permission details.
+        """
+        try:
+            perm = drive_service.transfer_ownership(file_id, email)
+            return json.dumps(perm.model_dump(exclude_none=True), indent=2)
         except GoogleFormsMCPError as e:
             return f"Error: {e.message}"

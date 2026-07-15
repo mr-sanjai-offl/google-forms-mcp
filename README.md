@@ -133,9 +133,9 @@ Add to your MCP settings:
 
 ---
 
-## 🔧 Available Tools (31 tools)
+## 🔧 Available Tools (38 tools)
 
-### Forms (16 tools)
+### Forms (19 tools)
 
 | Tool | Description |
 |:-----|:------------|
@@ -149,10 +149,13 @@ Add to your MCP settings:
 | `update_question` | Modify an existing question |
 | `delete_question` | Remove a question |
 | `move_question` | Reorder a question |
+| `duplicate_question` | Duplicate an existing question |
+| `set_question_branching` | Branch based on choice option |
 | `add_section` | Add a section (page break) |
 | `update_section` | Update section title/description |
 | `delete_section` | Remove a section |
-| `update_settings` | Update form settings (quiz mode, etc.) |
+| `set_section_navigation` | Set section navigation action |
+| `update_settings` | Update form settings (quiz, progress bar, etc.) |
 | `add_media` | Add an image or video |
 | `add_text_item` | Add a text block |
 
@@ -165,7 +168,7 @@ Add to your MCP settings:
 | `get_response_summary` | Aggregated statistics |
 | `export_responses` | Export as CSV or JSON |
 
-### Drive (9 tools)
+### Drive (12 tools)
 
 | Tool | Description |
 |:-----|:------------|
@@ -175,11 +178,14 @@ Add to your MCP settings:
 | `move_file` | Move to another folder |
 | `copy_file` | Copy a file |
 | `trash_file` | Move to trash |
+| `restore_file` | Restore from trash |
+| `get_file_metadata` | Get complete file metadata |
 | `share_file` | Share with users/groups |
+| `transfer_ownership` | Transfer file ownership |
 | `get_permissions` | List sharing permissions |
 | `remove_permission` | Remove a permission |
 
-### Sheets (6 tools)
+### Sheets (7 tools)
 
 | Tool | Description |
 |:-----|:------------|
@@ -188,6 +194,7 @@ Add to your MCP settings:
 | `read_sheet_data` | Read from a range |
 | `write_sheet_data` | Write to a range |
 | `append_sheet_data` | Append rows |
+| `clear_sheet_data` | Clear data from a range |
 | `export_sheet_csv` | Export as CSV |
 
 ---
@@ -215,8 +222,8 @@ These are Google Forms API limitations, not limitations of this MCP:
 |:--------|:-------|
 | Theme customization (colors, fonts, headers) | ❌ Not supported by API |
 | Delete responses | ❌ Not supported by API |
-| Conditional logic (show/hide questions) | ⚠️ Section-level branching only |
-| Form settings (limit responses, edit after submit) | ⚠️ Limited API support |
+| Link Form to Sheets | ❌ Not supported via API (requires UI/Apps Script) |
+| Settings | ✅ Now fully supported |
 
 ---
 

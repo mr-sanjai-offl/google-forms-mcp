@@ -74,6 +74,22 @@ class NumberValidationOp(str, Enum):
     IS_WHOLE_NUMBER = "IS_WHOLE_NUMBER"
 
 
+class GoToAction(str, Enum):
+    """Navigation actions for branching."""
+
+    NEXT_SECTION = "NEXT_SECTION"
+    RESTART_FORM = "RESTART_FORM"
+    SUBMIT_FORM = "SUBMIT_FORM"
+
+
+class EmailCollectionType(str, Enum):
+    """Email collection modes."""
+
+    NONE = "NONE"
+    VERIFIED = "VERIFIED"
+    RESPONDER_INPUT = "RESPONDER_INPUT"
+
+
 # --- Validation & Grading ---
 
 
@@ -127,7 +143,8 @@ class FormOption(BaseModel):
 
     value: str
     is_other: bool = False
-    go_to_section_id: str | None = None  # For section navigation
+    go_to_section_id: str | None = None
+    go_to_action: GoToAction | None = None
 
 
 class FormQuestion(BaseModel):
@@ -189,6 +206,10 @@ class FormItem(BaseModel):
     # Populated for VIDEO items
     video_uri: str | None = None
 
+    # Populated for PAGE_BREAK items — navigation target
+    go_to_action: GoToAction | None = None
+    go_to_section_id: str | None = None
+
 
 class FormInfo(BaseModel):
     """Form metadata."""
@@ -207,11 +228,13 @@ class FormSettings(BaseModel):
     """Form-level settings."""
 
     is_quiz: bool = False
-    email_collection: str = "NONE"  # NONE, VERIFIED, RESPONDER_INPUT
+    email_collection: str = "NONE"
     allow_response_edits: bool = False
     limit_one_response: bool = False
     confirmation_message: str = ""
     shuffle_questions: bool = False
+    progress_bar: bool = False
+    restrict_to_domain: bool = False
 
 
 class Form(BaseModel):
@@ -308,3 +331,23 @@ class SettingsUpdateRequest(BaseModel):
     email_collection: str | None = None
     confirmation_message: str | None = None
     shuffle_questions: bool | None = None
+    allow_response_edits: bool | None = None
+    limit_one_response: bool | None = None
+    progress_bar: bool | None = None
+    restrict_to_domain: bool | None = None
+
+
+class BranchingRule(BaseModel):
+    """Maps a choice option value to a navigation target."""
+
+    option_value: str
+    go_to_section_id: str | None = None
+    go_to_action: GoToAction | None = None
+
+
+class SectionNavigationRequest(BaseModel):
+    """Request to set navigation on a section (page break)."""
+
+    item_id: str
+    go_to_section_id: str | None = None
+    go_to_action: GoToAction | None = None
