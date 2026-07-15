@@ -1,0 +1,16 @@
+{
+  "title": "Event RSVP",
+  "description": "Please confirm your attendance for the upcoming event.",
+  "sections": [
+    {
+      "title": "Attendee Information",
+      "questions": [
+        {"title": "Full Name", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Email", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Will you attend?", "type": "MULTIPLE_CHOICE", "options": ["Yes", "No", "Maybe"], "required": true},
+        {"title": "Number of guests", "type": "DROPDOWN", "options": ["0", "1", "2", "3", "4+"], "required": false},
+        {"title": "Dietary restrictions", "type": "CHECKBOXES", "options": ["None", "Vegetarian", "Vegan", "Gluten-Free", "Nut Allergy", "Other"], "required": false}
+      ]
+    }
+  ]
+}

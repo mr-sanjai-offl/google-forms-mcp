@@ -8,10 +8,12 @@ from __future__ import annotations
 import json
 import os
 import stat
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from google_forms_mcp.infrastructure.logging import get_logger
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = get_logger("token_manager")
 

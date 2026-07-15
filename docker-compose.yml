@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: google-forms-mcp
+    restart: unless-stopped
+    environment:
+      # You can pass your credentials directly via env vars
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REFRESH_TOKEN=${GOOGLE_REFRESH_TOKEN}
+      # Or map a service account file
+      - GOOGLE_CLIENT_SECRETS_FILE=/app/credentials.json
+      # Control MCP Transport (stdio is the default for MCP)
+      - GOOGLE_FORMS_MCP_TRANSPORT=${GOOGLE_FORMS_MCP_TRANSPORT:-stdio}
+      - GOOGLE_FORMS_MCP_PORT=${GOOGLE_FORMS_MCP_PORT:-8000}
+      - GOOGLE_FORMS_MCP_LOG_LEVEL=${GOOGLE_FORMS_MCP_LOG_LEVEL:-INFO}
+    volumes:
+      # Mount token storage for persistence
+      - ./data:/app/data
+      # Mount credentials if using a file
+      # - ./credentials.json:/app/credentials.json:ro
+    ports:
+      # Expose port if using SSE transport
+      - "${GOOGLE_FORMS_MCP_PORT:-8000}:${GOOGLE_FORMS_MCP_PORT:-8000}"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:${GOOGLE_FORMS_MCP_PORT}/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

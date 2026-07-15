@@ -85,11 +85,11 @@ def build_credentials_from_secrets_file(settings: Settings) -> Credentials:
         )
         port = 0
         if settings.oauth_redirect_uri.startswith("http://localhost:"):
-            try:
+            import contextlib
+
+            with contextlib.suppress(IndexError, ValueError):
                 # Extract port from e.g., http://localhost:8080/
                 port = int(settings.oauth_redirect_uri.split(":")[2].strip("/"))
-            except (IndexError, ValueError):
-                pass
 
         creds = flow.run_local_server(
             port=port,
@@ -97,7 +97,7 @@ def build_credentials_from_secrets_file(settings: Settings) -> Credentials:
             prompt="consent",
         )
         logger.info("Obtained credentials via interactive OAuth flow")
-        return creds
+        return creds  # type: ignore[return-value]
     except Exception as e:
         raise InvalidCredentialsError(f"Failed to complete OAuth flow: {e}") from e
 

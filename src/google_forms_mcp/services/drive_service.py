@@ -6,15 +6,17 @@ and search operations via the Google Drive API v3.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from google_forms_mcp.clients.drive_client import DriveClient
 from google_forms_mcp.infrastructure.logging import get_logger
 from google_forms_mcp.models.drive import (
     DriveFile,
     DriveFolder,
     DrivePermission,
 )
+
+if TYPE_CHECKING:
+    from google_forms_mcp.clients.drive_client import DriveClient
 
 logger = get_logger("drive_service")
 
@@ -27,6 +29,7 @@ class DriveService:
 
     def __init__(self, drive_client: DriveClient) -> None:
         self._client = drive_client
+        self._metadata_cache: dict[str, DriveFile] = {}
 
     # --- Folder Operations ---
 
@@ -165,9 +168,14 @@ class DriveService:
         logger.info("Restored file: %s", file_id)
 
     def get_file_metadata(self, file_id: str) -> DriveFile:
-        """Get full metadata for a file."""
+        """Get full metadata for a file, using a local cache to improve performance."""
+        if file_id in self._metadata_cache:
+            return self._metadata_cache[file_id]
+
         result = self._client.get_file(file_id=file_id)
-        return self._parse_file(result)
+        parsed = self._parse_file(result)
+        self._metadata_cache[file_id] = parsed
+        return parsed
 
     # --- Permissions ---
 

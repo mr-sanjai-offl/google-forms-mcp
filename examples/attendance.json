@@ -1,0 +1,15 @@
+{
+  "title": "Daily Attendance",
+  "description": "Mark your attendance for today.",
+  "sections": [
+    {
+      "title": "Attendance",
+      "questions": [
+        {"title": "Full Name", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Date", "type": "DATE", "required": true},
+        {"title": "Status", "type": "MULTIPLE_CHOICE", "options": ["Present", "Absent", "Late", "Work From Home"], "required": true},
+        {"title": "Reason for absence (if applicable)", "type": "PARAGRAPH", "required": false}
+      ]
+    }
+  ]
+}

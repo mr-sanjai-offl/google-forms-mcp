@@ -1,0 +1,29 @@
+{
+  "title": "Research Survey",
+  "description": "Academic research survey on technology usage patterns.",
+  "sections": [
+    {
+      "title": "Demographics",
+      "questions": [
+        {"title": "Age Group", "type": "MULTIPLE_CHOICE", "options": ["18-24", "25-34", "35-44", "45-54", "55+"], "required": true},
+        {"title": "Gender", "type": "MULTIPLE_CHOICE", "options": ["Male", "Female", "Non-binary", "Prefer not to say"], "required": true},
+        {"title": "Highest Education Level", "type": "DROPDOWN", "options": ["High School", "Bachelor's", "Master's", "PhD", "Other"], "required": true}
+      ]
+    },
+    {
+      "title": "Technology Usage",
+      "questions": [
+        {"title": "How many hours per day do you use a computer?", "type": "LINEAR_SCALE", "low_label": "0", "high_label": "12+", "required": true},
+        {"title": "Which devices do you use regularly?", "type": "CHECKBOXES", "options": ["Smartphone", "Laptop", "Desktop", "Tablet", "Smartwatch"], "required": true},
+        {"title": "Rate your technical proficiency", "type": "LINEAR_SCALE", "low_label": "Beginner", "high_label": "Expert", "required": true}
+      ]
+    },
+    {
+      "title": "Open-Ended",
+      "questions": [
+        {"title": "Describe your biggest technology challenge", "type": "PARAGRAPH", "required": false},
+        {"title": "Any suggestions for improving technology education?", "type": "PARAGRAPH", "required": false}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Employee Feedback Survey",
+  "description": "Share your anonymous feedback to help improve our workplace.",
+  "sections": [
+    {
+      "title": "Overall Satisfaction",
+      "questions": [
+        {"title": "How satisfied are you with your current role?", "type": "LINEAR_SCALE", "low_label": "Very Dissatisfied", "high_label": "Very Satisfied", "required": true},
+        {"title": "How would you rate the work-life balance?", "type": "LINEAR_SCALE", "low_label": "Poor", "high_label": "Excellent", "required": true},
+        {"title": "Would you recommend this company to a friend?", "type": "MULTIPLE_CHOICE", "options": ["Definitely", "Probably", "Not Sure", "Probably Not", "Definitely Not"], "required": true}
+      ]
+    },
+    {
+      "title": "Detailed Feedback",
+      "questions": [
+        {"title": "What do you like most about working here?", "type": "PARAGRAPH", "required": false},
+        {"title": "What areas need improvement?", "type": "PARAGRAPH", "required": false},
+        {"title": "Any additional comments?", "type": "PARAGRAPH", "required": false}
+      ]
+    }
+  ]
+}

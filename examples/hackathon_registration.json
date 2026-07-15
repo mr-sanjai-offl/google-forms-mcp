@@ -1,0 +1,30 @@
+{
+  "title": "Hackathon Registration",
+  "description": "Register your team for the hackathon event.",
+  "sections": [
+    {
+      "title": "Team Details",
+      "questions": [
+        {"title": "Team Name", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Team Size", "type": "MULTIPLE_CHOICE", "options": ["1", "2", "3", "4", "5+"], "required": true},
+        {"title": "Team Lead Email", "type": "SHORT_ANSWER", "required": true}
+      ]
+    },
+    {
+      "title": "Project Information",
+      "questions": [
+        {"title": "Project Title", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Project Description", "type": "PARAGRAPH", "required": true},
+        {"title": "Tech Stack", "type": "CHECKBOXES", "options": ["Python", "JavaScript", "Go", "Rust", "Java", "Other"], "required": true},
+        {"title": "Track", "type": "DROPDOWN", "options": ["AI/ML", "Web3", "HealthTech", "EdTech", "Open Innovation"], "required": true}
+      ]
+    },
+    {
+      "title": "Logistics",
+      "questions": [
+        {"title": "Dietary Preferences", "type": "MULTIPLE_CHOICE", "options": ["Vegetarian", "Vegan", "Non-Vegetarian", "No Preference"], "required": false},
+        {"title": "T-Shirt Size", "type": "DROPDOWN", "options": ["XS", "S", "M", "L", "XL", "XXL"], "required": false}
+      ]
+    }
+  ]
+}

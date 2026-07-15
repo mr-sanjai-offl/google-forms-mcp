@@ -3,14 +3,22 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP Protocol](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
+[![CI](https://github.com/your-org/google-forms-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/google-forms-mcp/actions/workflows/ci.yml)
+[![Docker Support](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 
 **Production-grade Model Context Protocol (MCP) server for Google Forms automation.**
 
-Create, manage, and analyze Google Forms through AI assistants like Claude, ChatGPT, Cursor, VS Code, Windsurf, and any MCP-compatible client.
+Create, manage, and analyze Google Forms through an autonomous AI Planner that works with Claude, ChatGPT, Cursor, VS Code, Windsurf, Cline, Roo Code, and any MCP-compatible client.
 
 ---
 
 ## ✨ Features
+
+### 🤖 Autonomous AI Planner
+- Automatically detects user intent and interviews the user for missing details.
+- Validates the execution plan to prevent API errors.
+- Orchestrates Google Forms tools automatically to build complex forms.
+- Includes pre-built templates (Hackathon, Survey, Quiz, RSVP).
 
 ### 📝 Form Management
 - **Create** forms with title, description, and quiz mode
@@ -87,6 +95,9 @@ uvx google-forms-mcp
 # Using pip
 pip install google-forms-mcp
 python -m google_forms_mcp
+
+# Using Docker Compose
+docker-compose up -d
 ```
 
 ### 4. Configure Your MCP Client
@@ -111,9 +122,29 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-#### Cursor / VS Code
+#### Cursor / VS Code / Windsurf
 
 Add to your MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "google-forms": {
+      "command": "uvx",
+      "args": ["google-forms-mcp"],
+      "env": {
+        "GOOGLE_CLIENT_ID": "your-client-id",
+        "GOOGLE_CLIENT_SECRET": "your-client-secret",
+        "GOOGLE_REFRESH_TOKEN": "your-refresh-token"
+      }
+    }
+  }
+}
+```
+
+#### Cline / Roo Code
+
+Add to your `cline_mcp_settings.json`:
 
 ```json
 {

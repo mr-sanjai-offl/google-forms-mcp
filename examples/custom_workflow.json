@@ -1,0 +1,45 @@
+{
+  "_comment": "This is an example of a custom prompt-driven workflow using the plan_form MCP prompt.",
+  "workflow": {
+    "step_1": {
+      "action": "Call the plan_form prompt with an intent hint",
+      "prompt_name": "plan_form",
+      "arguments": {
+        "intent": "Customer Satisfaction Survey for SaaS Product"
+      },
+      "expected_behavior": "The AI will ask follow-up questions about the product name, target audience, question categories, and whether anonymity is required."
+    },
+    "step_2": {
+      "action": "AI collects missing information through conversation",
+      "example_questions": [
+        "What is the name of your SaaS product?",
+        "Who is the target audience? (End users, Enterprise admins, Developers)",
+        "Should the survey be anonymous?",
+        "How many questions do you want approximately?"
+      ]
+    },
+    "step_3": {
+      "action": "AI generates execution plan and calls validate_execution_plan",
+      "tool_name": "validate_execution_plan",
+      "expected_output": {
+        "status": "valid",
+        "question_count": 12,
+        "errors": [],
+        "warnings": []
+      }
+    },
+    "step_4": {
+      "action": "AI executes the plan using MCP tools",
+      "tool_sequence": [
+        "create_form",
+        "add_section (repeat per section)",
+        "add_question (repeat per question)",
+        "update_settings"
+      ]
+    },
+    "step_5": {
+      "action": "AI presents the final form URL to the user",
+      "example_output": "Your form has been created! View it here: https://docs.google.com/forms/d/e/xxx/viewform"
+    }
+  }
+}

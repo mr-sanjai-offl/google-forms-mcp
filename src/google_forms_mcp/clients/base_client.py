@@ -8,11 +8,10 @@ from __future__ import annotations
 
 import socket
 import time
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from googleapiclient.errors import HttpError
 
-from google_forms_mcp.config import Settings
 from google_forms_mcp.exceptions import (
     APIError,
     InvalidRequestError,
@@ -23,7 +22,10 @@ from google_forms_mcp.exceptions import (
     ServerError,
 )
 from google_forms_mcp.infrastructure.logging import get_logger
-from google_forms_mcp.infrastructure.rate_limiter import RateLimiter
+
+if TYPE_CHECKING:
+    from google_forms_mcp.config import Settings
+    from google_forms_mcp.infrastructure.rate_limiter import RateLimiter
 
 logger = get_logger("google_client")
 
@@ -71,7 +73,7 @@ class BaseGoogleClient:
         for attempt in range(max_retries + 1):
             try:
                 # Wait for rate limit tokens
-                self._limiter.acquire(tokens=token_cost)
+                self._limiter.acquire(name="default", tokens=token_cost)
 
                 # Execute the request
                 return request.execute()
@@ -141,7 +143,7 @@ class BaseGoogleClient:
                 raise QuotaExceededError(msg) from error
             raise PermissionDeniedError(msg) from error
         elif status == 404:
-            raise NotFoundError(msg) from error
+            raise NotFoundError(resource_type="Resource", resource_id=msg) from error
         elif status == 429:
             raise RateLimitError(msg) from error
         elif status >= 500:

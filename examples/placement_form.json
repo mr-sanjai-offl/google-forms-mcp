@@ -1,0 +1,32 @@
+{
+  "title": "Job Placement Application",
+  "description": "Apply for campus placements through this form.",
+  "sections": [
+    {
+      "title": "Personal Details",
+      "questions": [
+        {"title": "Full Name", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Email Address", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Phone Number", "type": "SHORT_ANSWER", "required": true},
+        {"title": "LinkedIn Profile URL", "type": "SHORT_ANSWER", "required": false}
+      ]
+    },
+    {
+      "title": "Academic Background",
+      "questions": [
+        {"title": "Degree", "type": "DROPDOWN", "options": ["B.Tech", "M.Tech", "MBA", "BCA", "MCA", "Other"], "required": true},
+        {"title": "Branch/Specialization", "type": "SHORT_ANSWER", "required": true},
+        {"title": "CGPA / Percentage", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Year of Graduation", "type": "DROPDOWN", "options": ["2024", "2025", "2026", "2027"], "required": true}
+      ]
+    },
+    {
+      "title": "Preferences",
+      "questions": [
+        {"title": "Preferred Role", "type": "CHECKBOXES", "options": ["Software Engineer", "Data Analyst", "Product Manager", "DevOps", "QA Engineer", "Other"], "required": true},
+        {"title": "Preferred Location", "type": "CHECKBOXES", "options": ["Bangalore", "Hyderabad", "Delhi NCR", "Mumbai", "Remote", "Any"], "required": true},
+        {"title": "Upload Resume", "type": "FILE_UPLOAD", "required": true}
+      ]
+    }
+  ]
+}

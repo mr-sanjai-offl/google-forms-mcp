@@ -1,0 +1,24 @@
+{
+  "title": "Student Registration Form",
+  "description": "Collect student information for course enrollment.",
+  "sections": [
+    {
+      "title": "Personal Information",
+      "questions": [
+        {"title": "Full Name", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Email Address", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Phone Number", "type": "SHORT_ANSWER", "required": false},
+        {"title": "Date of Birth", "type": "DATE", "required": true}
+      ]
+    },
+    {
+      "title": "Academic Details",
+      "questions": [
+        {"title": "Student ID", "type": "SHORT_ANSWER", "required": true},
+        {"title": "Department", "type": "DROPDOWN", "options": ["Computer Science", "Electrical Engineering", "Mechanical Engineering", "Business Administration", "Other"], "required": true},
+        {"title": "Year of Study", "type": "MULTIPLE_CHOICE", "options": ["1st Year", "2nd Year", "3rd Year", "4th Year", "Post-Graduate"], "required": true},
+        {"title": "Any special accommodations needed?", "type": "PARAGRAPH", "required": false}
+      ]
+    }
+  ]
+}

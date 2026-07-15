@@ -5,7 +5,7 @@ Handles OAuth consent flow, credential loading, scope validation, and token refr
 
 from __future__ import annotations
 
-from google.oauth2.credentials import Credentials
+from typing import TYPE_CHECKING
 
 from google_forms_mcp.auth.oauth import (
     build_credentials_from_env,
@@ -21,6 +21,9 @@ from google_forms_mcp.exceptions import (
     MissingScopesError,
 )
 from google_forms_mcp.infrastructure.logging import get_logger
+
+if TYPE_CHECKING:
+    from google.oauth2.credentials import Credentials
 
 logger = get_logger("credential_manager")
 

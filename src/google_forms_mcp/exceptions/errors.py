@@ -44,11 +44,14 @@ class RefreshFailedError(AuthenticationError):
 class AuthNotConfiguredError(AuthenticationError):
     """No authentication method is configured."""
 
-    def __init__(self) -> None:
+    def __init__(self, message: str | None = None) -> None:
         super().__init__(
-            "No authentication configured. Please set GOOGLE_CLIENT_ID, "
-            "GOOGLE_CLIENT_SECRET, and GOOGLE_REFRESH_TOKEN environment variables, "
-            "or provide a GOOGLE_CLIENT_SECRETS_FILE for interactive OAuth."
+            message
+            or (
+                "No authentication configured. Please set GOOGLE_CLIENT_ID, "
+                "GOOGLE_CLIENT_SECRET, and GOOGLE_REFRESH_TOKEN environment variables, "
+                "or provide a GOOGLE_CLIENT_SECRETS_FILE for interactive OAuth."
+            )
         )
 
 

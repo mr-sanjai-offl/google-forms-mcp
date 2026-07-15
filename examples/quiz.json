@@ -1,0 +1,47 @@
+{
+  "title": "General Knowledge Quiz",
+  "description": "Test your knowledge! This is a graded quiz.",
+  "is_quiz": true,
+  "sections": [
+    {
+      "title": "Science",
+      "questions": [
+        {
+          "title": "What is the chemical symbol for water?",
+          "type": "SHORT_ANSWER",
+          "required": true,
+          "correct_answer": "H2O",
+          "points": 1
+        },
+        {
+          "title": "Which planet is known as the Red Planet?",
+          "type": "MULTIPLE_CHOICE",
+          "options": ["Venus", "Mars", "Jupiter", "Saturn"],
+          "required": true,
+          "correct_answer": "Mars",
+          "points": 1
+        }
+      ]
+    },
+    {
+      "title": "History",
+      "questions": [
+        {
+          "title": "In what year did World War II end?",
+          "type": "SHORT_ANSWER",
+          "required": true,
+          "correct_answer": "1945",
+          "points": 2
+        },
+        {
+          "title": "Who was the first President of the United States?",
+          "type": "MULTIPLE_CHOICE",
+          "options": ["Abraham Lincoln", "George Washington", "Thomas Jefferson", "John Adams"],
+          "required": true,
+          "correct_answer": "George Washington",
+          "points": 1
+        }
+      ]
+    }
+  ]
+}

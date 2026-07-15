@@ -7,9 +7,8 @@ single point of contact with the Forms API.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from google_forms_mcp.clients.forms_client import FormsClient
 from google_forms_mcp.exceptions import (
     FormNotFoundError,
     InvalidRequestError,
@@ -45,6 +44,9 @@ from google_forms_mcp.models.response import (
     FormResponse,
     Grade,
 )
+
+if TYPE_CHECKING:
+    from google_forms_mcp.clients.forms_client import FormsClient
 
 logger = get_logger("forms_service")
 
@@ -277,7 +279,7 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        raw_form = self._client.get_form(form_id=form_id)
+        raw_form = self._client.get(form_id=form_id)
         original_item = None
         old_index = 0
         for i, item in enumerate(raw_form.get("items", [])):
@@ -318,7 +320,7 @@ class FormsService:
         Returns:
             Updated Form object.
         """
-        raw_form = self._client.get_form(form_id=form_id)
+        raw_form = self._client.get(form_id=form_id)
         original_item = None
         for item in raw_form.get("items", []):
             if item.get("itemId") == item_id:
@@ -331,7 +333,7 @@ class FormsService:
         try:
             options = original_item["questionItem"]["question"]["choiceQuestion"]["options"]
         except KeyError:
-            raise InvalidRequestError("Item is not a choice question with options.")
+            raise InvalidRequestError("Item is not a choice question with options.") from None
 
         # Build mapping of values to rules
         rule_map = {r.option_value: r for r in branching_rules}
@@ -360,7 +362,7 @@ class FormsService:
 
     def set_section_navigation(self, form_id: str, request: SectionNavigationRequest) -> Form:
         """Set navigation action for a section (page break)."""
-        raw_form = self._client.get_form(form_id=form_id)
+        raw_form = self._client.get(form_id=form_id)
         original_item = None
         for item in raw_form.get("items", []):
             if item.get("itemId") == request.item_id:
@@ -821,7 +823,7 @@ class FormsService:
         vt = validation.type
 
         if vt == ValidationType.NUMBER and validation.number_op:
-            num_val = {"conditionType": validation.number_op.value}
+            num_val: dict[str, Any] = {"conditionType": validation.number_op.value}
             if validation.number_value is not None:
                 num_val["value"] = str(validation.number_value)
             if (

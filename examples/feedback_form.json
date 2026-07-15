@@ -1,0 +1,16 @@
+{
+  "title": "Feedback Form",
+  "description": "We value your feedback. Please share your thoughts.",
+  "sections": [
+    {
+      "title": "Your Feedback",
+      "questions": [
+        {"title": "How would you rate your overall experience?", "type": "LINEAR_SCALE", "low_label": "Poor", "high_label": "Excellent", "required": true},
+        {"title": "What did you like most?", "type": "PARAGRAPH", "required": false},
+        {"title": "What could be improved?", "type": "PARAGRAPH", "required": false},
+        {"title": "Would you use this service again?", "type": "MULTIPLE_CHOICE", "options": ["Yes", "No", "Maybe"], "required": true},
+        {"title": "Any additional comments?", "type": "PARAGRAPH", "required": false}
+      ]
+    }
+  ]
+}

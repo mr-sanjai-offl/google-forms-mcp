@@ -7,9 +7,8 @@ from __future__ import annotations
 
 import csv
 import io
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from google_forms_mcp.clients.sheets_client import SheetsClient
 from google_forms_mcp.exceptions import SpreadsheetNotFoundError
 from google_forms_mcp.infrastructure.logging import get_logger
 from google_forms_mcp.models.sheets import (
@@ -18,6 +17,9 @@ from google_forms_mcp.models.sheets import (
     SheetWriteResult,
     Spreadsheet,
 )
+
+if TYPE_CHECKING:
+    from google_forms_mcp.clients.sheets_client import SheetsClient
 
 logger = get_logger("sheets_service")
 
