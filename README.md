@@ -1,5 +1,7 @@
 # 🟣 Google Forms MCP
 
+[![Release v1.0.0](https://img.shields.io/badge/release-v1.0.0-purple.svg)](https://github.com/your-org/google-forms-mcp/releases/tag/v1.0.0)
+[![PyPI version](https://img.shields.io/badge/pypi-v1.0.0-blue.svg)](https://pypi.org/project/google-forms-mcp/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP Protocol](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)

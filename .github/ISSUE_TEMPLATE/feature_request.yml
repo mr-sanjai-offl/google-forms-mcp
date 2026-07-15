@@ -1,0 +1,35 @@
+name: Feature Request
+description: Suggest a new feature, prompt, tool, or template for Google-Forms-MCP
+title: "[FEAT]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an improvement to Google-Forms-MCP! Please share your vision below.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem? Please describe.
+      description: A clear and concise description of what the problem is.
+      placeholder: "I'm always frustrated when trying to automatically export form responses into a formatted sheet report..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen (new MCP tool, prompt, template, or API capability).
+      placeholder: "An `analyze_responses` prompt that instructs Claude how to paginate responses and output a summary table..."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered
+      description: Any alternative solutions or workarounds you've considered.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, API links, or screenshots about the feature request here.

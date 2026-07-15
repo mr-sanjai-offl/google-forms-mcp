@@ -1,0 +1,67 @@
+name: Bug Report
+description: File a bug report to help us improve Google-Forms-MCP
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible. Ensure no sensitive OAuth tokens or client secrets are pasted below!
+  - type: input
+    id: version
+    attributes:
+      label: Google-Forms-MCP Version
+      description: What version of Google-Forms-MCP are you running? (e.g., v1.0.0 or commit SHA)
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: mcp-client
+    attributes:
+      label: MCP Client & Version
+      description: What MCP client are you using? (e.g., Claude Desktop v0.7.0, Cursor v0.42, VS Code, Cline)
+      placeholder: "Claude Desktop v0.7.0"
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python & OS Version
+      description: Output of `python --version` and your operating system.
+      placeholder: "Python 3.11.8 on Windows 11 / macOS 14.3"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+      placeholder: "When calling create_form through Claude Desktop, the server returns..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Configure server in claude_desktop_config.json
+        2. Ask Claude: "Create a quiz form"
+        3. See error in server stderr logs
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs (Stderr)
+      description: Paste any relevant logs from stderr or terminal output. Ensure tokens/secrets are redacted!
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verification
+      options:
+        - label: I have verified that my OAuth client_secrets.json and scopes are configured correctly.
+          required: true
+        - label: I have redacted any sensitive tokens, emails, or credentials from the logs above.
+          required: true

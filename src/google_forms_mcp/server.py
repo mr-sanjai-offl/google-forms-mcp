@@ -9,6 +9,7 @@ from __future__ import annotations
 from fastmcp import FastMCP
 from googleapiclient.discovery import build
 
+from google_forms_mcp import __version__
 from google_forms_mcp.auth.credential_manager import CredentialManager
 from google_forms_mcp.clients.drive_client import DriveClient
 from google_forms_mcp.clients.forms_client import FormsClient
@@ -35,7 +36,7 @@ def create_server(settings: Settings | None = None) -> FastMCP:
     This is the composition root. All dependency injection happens here.
 
     Args:
-        settings: Application settings. Auto-loaded from env if not provided.
+        settings: Optional custom settings. If None, loaded from env.
 
     Returns:
         Configured FastMCP server instance, ready to run.
@@ -45,7 +46,7 @@ def create_server(settings: Settings | None = None) -> FastMCP:
 
     # Setup logging
     setup_logging(settings.google_forms_mcp_log_level.value)
-    logger.info("Initializing Google Forms MCP Server v0.2.0")
+    logger.info(f"Initializing Google Forms MCP Server v{__version__}")
 
     # Create the MCP server
     mcp = FastMCP(
