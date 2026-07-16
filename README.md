@@ -11,6 +11,7 @@
                                                              
 ```
 <meta name="google-site-verification" content="qj4RNAx2OhoRZ6F4c30-UBqZwGFcqtdZxhDIMoG1el8" />
+
 # Google Forms MCP
 
 [![Release v1.0.0](https://img.shields.io/badge/release-v1.0.0-purple.svg)](https://github.com/your-org/google-forms-mcp/releases/tag/v1.0.0)
