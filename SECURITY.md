@@ -13,7 +13,7 @@ Currently, the `main` branch and tagged releases >= `1.0.0` are supported with s
 
 Please do not open a public issue for security vulnerabilities.
 
-Instead, please email security@example.com with the following details:
+Instead, please email mr.sanjai.offl@gmail.com with the following details:
 - A description of the vulnerability.
 - Steps to reproduce the issue.
 - Potential impact.
