@@ -203,6 +203,20 @@ claude mcp add google-forms -s user -- C:/path/to/google-forms-mcp/.venv/Scripts
 ```
 *Note: If credentials are not saved in a root `.env` file, pass them via environment variables when running Claude Code or define them directly inside `~/.claude.json` under `"mcpServers"`.*
 
+#### Option E: Connecting via GUI Settings (ChatGPT Desktop / Cursor / Windsurf GUI)
+When configuring the server using graphical settings panels (like in ChatGPT Desktop Developer Mode or IDE GUI forms):
+* **⚠️ IMPORTANT:** Do **not** put arguments (`-m google_forms_mcp`) inside the **Command to launch** box!
+* Configure the fields exactly as follows:
+  - **Command to launch:**
+    `s:/google-forms-mcp/.venv/Scripts/python.exe` *(Or `uvx` if running globally)*
+  - **Arguments:** Click **+ Add argument** twice:
+    1. `-m`
+    2. `google_forms_mcp`
+    *(If using `uvx`, add single argument `google-forms-mcp`)*
+  - **Working directory:**
+    `s:/google-forms-mcp`
+  - **Environment variables:** Add your 3 keys (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`).
+
 ---
 
 ## 🔧 Available Tools (44 Tools Total)
