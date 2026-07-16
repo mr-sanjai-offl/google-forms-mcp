@@ -1,6 +1,5 @@
 """Tests for the RateLimiter (token bucket)."""
 
-
 from google_forms_mcp.infrastructure.rate_limiter import (
     RateLimiter,
     create_default_rate_limiter,

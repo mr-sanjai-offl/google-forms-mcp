@@ -81,6 +81,9 @@ ignore = ["E501"]
 [tool.ruff.lint.isort]
 known-first-party = ["google_forms_mcp"]
 
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["pydantic.BaseModel", "BaseModel"]
+
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "basic"

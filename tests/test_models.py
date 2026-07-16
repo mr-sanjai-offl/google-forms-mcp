@@ -135,4 +135,3 @@ def test_sheet_write_result():
         updated_cells=4,
     )
     assert r.updated_cells == 4
-
