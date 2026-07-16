@@ -191,6 +191,18 @@ If running the server in `http` transport mode on `http://127.0.0.1:8000/mcp`:
 2. Enter **Remote MCP server URL**: `http://127.0.0.1:8000/mcp` *(Or your public HTTPS tunnel URL if connecting from cloud web apps like `claude.ai`)*.
 3. Leave OAuth settings blank if your `.env` already contains `GOOGLE_REFRESH_TOKEN`.
 
+#### Option D: Connecting with Claude Code CLI (`claude mcp add`)
+If you use Anthropic's **Claude Code** command-line agent (`claude`), you can register the MCP server directly using the terminal or by creating a workspace `.mcp.json`:
+
+```bash
+# Register globally (`user` scope) via uvx:
+claude mcp add google-forms -s user -- uvx google-forms-mcp
+
+# OR register globally from local Git repo Python environment:
+claude mcp add google-forms -s user -- C:/path/to/google-forms-mcp/.venv/Scripts/python.exe -m google_forms_mcp
+```
+*Note: If credentials are not saved in a root `.env` file, pass them via environment variables when running Claude Code or define them directly inside `~/.claude.json` under `"mcpServers"`.*
+
 ---
 
 ## 🔧 Available Tools (44 Tools Total)
