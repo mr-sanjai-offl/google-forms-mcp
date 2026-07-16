@@ -158,7 +158,6 @@ class Settings(BaseSettings):
 # OAuth scopes required by the MCP server
 GOOGLE_FORMS_SCOPES = [
     "https://www.googleapis.com/auth/forms.body",
-    "https://www.googleapis.com/auth/forms.body.readonly",
     "https://www.googleapis.com/auth/forms.responses.readonly",
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets",

@@ -626,13 +626,13 @@ class FormsService:
         """
 
         kwargs: dict[str, Any] = {
-            "formId": form_id,
-            "pageSize": min(page_size, 5000),
+            "form_id": form_id,
+            "page_size": min(page_size, 5000),
         }
         if page_token:
-            kwargs["pageToken"] = page_token
+            kwargs["page_token"] = page_token
         if filter_str:
-            kwargs["filter"] = filter_str
+            kwargs["filter_str"] = filter_str
 
         try:
             result = self._client.list_responses(**kwargs)
@@ -773,27 +773,15 @@ class FormsService:
                 file_q["types"] = request.allowed_file_types
             question["fileUploadQuestion"] = file_q
 
-        # Add validation if specified
-        if request.validation:
-            validation_dict = self._build_validation_rule(request.validation)
-            if validation_dict:
-                question["textQuestion"] = question.get("textQuestion", {})
-                if request.question_type == QuestionType.PARAGRAPH:
-                    question["textQuestion"]["paragraph"] = True
-
-                # Text/Paragraph/Scale can have validation in API, but usually it's under textQuestion
-                # or a general validation field. Actually, Google API maps text, regex, length to TextValidation,
-                # number to NumberValidation. But since they are all under "textQuestion" or similar?
-                # No, they are under textQuestion.validation?
-                # Let's map it under textQuestion or choiceQuestion according to the API docs.
-                # Actually, the API says textQuestion.paragraph, but validation is under textQuestion or scaleQuestion etc.
-                # Let's just put it under textQuestion for now, as that's the most common (for short answer/paragraph).
-                # But actually, Forms API uses textValidation / numberValidation inside the specific question types?
-                # The API structure is textQuestion (which has paragraph, and maybe not validation?). Wait, no, it's just a general field?
-                # The google documentation says TextValidation, NumberValidation etc are NOT fields of question directly,
-                # they are under textQuestion etc? No, wait.
-                # According to the REST API, TextQuestion has: `paragraph` and `validation`.
-                question.setdefault("textQuestion", {})["validation"] = validation_dict
+        # Add validation if specified (only applicable for text questions in Forms API)
+        if (
+            request.validation
+            and request.question_type in (QuestionType.SHORT_ANSWER, QuestionType.PARAGRAPH)
+            and (validation_dict := self._build_validation_rule(request.validation))
+        ):
+            question.setdefault("textQuestion", {})["validation"] = validation_dict
+            if request.question_type == QuestionType.PARAGRAPH:
+                question["textQuestion"]["paragraph"] = True
 
         # Add grading if specified
         if request.grading:
