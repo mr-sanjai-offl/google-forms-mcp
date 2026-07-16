@@ -26,6 +26,13 @@
 
 Create, manage, and analyze Google Forms through an autonomous AI Planner that works with Claude, ChatGPT, Cursor, VS Code, Windsurf, Cline, Roo Code, and any MCP-compatible client.
 
+<div align="center">
+  <br />
+  <img src="assets/student_form_demo.png" alt="AI Assistant creating a Student Info Collection Form automatically with Google Forms MCP" width="800" />
+  <br />
+  <p><i>Building complete Google Forms in seconds right from your AI chat client.</i></p>
+</div>
+
 ---
 
 ## ✨ Features
